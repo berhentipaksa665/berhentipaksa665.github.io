@@ -1,0 +1,150 @@
+<style>
+.masonryuGallery2-container {
+  column-count: 3;
+  column-gap: 0;
+}
+@media (min-width: 600px) {
+  .masonryuGallery2-container { column-count: 4; }
+}
+@media (min-width: 1000px) {
+  .masonryuGallery2-container { column-count: 4; }
+}
+.masonryuGallery2-container .masonryu-item {
+  break-inside: avoid;
+  margin: 0;
+  padding: 0;
+}
+.masonryuGallery2-container a { display: block; width: 100%; }
+.masonryuGallery2-container img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+</style>
+
+<div class="masonryuGallery2-container" id="masonryuGallery2-feed"></div>
+
+<script>
+function showFeed(json) {
+  const entries = json.feed.entry || [];
+  if (entries.length === 0) return;
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  }
+
+  shuffle(entries);
+  const container = document.getElementById("masonryuGallery2-feed");
+
+  function getPostUrl(entry) {
+    return entry.link.find(l => l.rel === "alternate").href;
+  }
+
+  function extractImage(entry) {
+    const content = entry.content?.$t || '';
+    const imgMatch = content.match(/<img[^>]+src="([^">]+)"/);
+    return imgMatch ? imgMatch[1] : "https://via.placeholder.com/300x200?text=No+Image";
+  }
+
+  let html = '';
+  entries.slice(0, 150).forEach(entry => {
+    const img = extractImage(entry);
+    const url = getPostUrl(entry);
+    const title = entry.title.$t;
+    html += `
+      <div class="masonryu-item">
+        <a href="${url}" title="${title}">
+          <img src="${img}" alt="${title}">
+        </a>
+      </div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+// JSONP version: Blogger feed + callback
+document.write('<script src="https://www.raiska.my.id/feeds/posts/default?alt=json-in-script&callback=showFeed&max-results=9999"></' + 'script>');
+</script>
+
+<!-- awal photo gallery -->
+<hr />
+<h3>Photo Artis Seksi</h3>
+<style>
+.masonryuGallery2-container {
+  column-count: 3;
+  column-gap: 0;
+}
+@media (min-width: 600px) {
+  .masonryuGallery2-container { column-count: 4; }
+}
+@media (min-width: 1000px) {
+  .masonryuGallery2-container { column-count: 4; }
+}
+.masonryuGallery2-container .masonryu-item {
+  break-inside: avoid;
+  margin: 0;
+  padding: 0;
+}
+.masonryuGallery2-container a { display: block; width: 100%; }
+.masonryuGallery2-container img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+</style>
+
+<div class="masonryuGallery2-container" id="masonryuGallery2-feed"></div>
+
+<script>
+function showFeed(json) {
+  const entries = json.feed.entry || [];
+  if (entries.length === 0) return;
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  }
+
+  shuffle(entries);
+  const container = document.getElementById("masonryuGallery2-feed");
+
+  function getPostUrl(entry) {
+    return entry.link.find(l => l.rel === "alternate").href;
+  }
+
+  function extractImage(entry) {
+    const content = entry.content?.$t || '';
+    const imgMatch = content.match(/<img[^>]+src="([^">]+)"/);
+    return imgMatch ? imgMatch[1] : "https://via.placeholder.com/300x200?text=No+Image";
+  }
+
+  let html = '';
+  entries.slice(0, 1000).forEach(entry => {
+    const img = extractImage(entry);
+    const url = getPostUrl(entry);
+    const title = entry.title.$t;
+    html += `
+      <div class="masonryu-item">
+        <a href="${url}" title="${title}">
+          <img src="${img}" alt="${title}">
+        </a>
+      </div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+// JSONP version: Blogger feed + callback
+document.write('<script src="https://www.raiska.my.id/feeds/posts/default?alt=json-in-script&callback=showFeed&max-results=9999"></' + 'script>');
+</script>
+<!-- akhir photo gallery -->
+	<hr /><br />
+
+
