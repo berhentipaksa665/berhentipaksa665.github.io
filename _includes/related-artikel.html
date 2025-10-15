@@ -1,3 +1,4 @@
+
 <hr />
 <h3>More Video</h3>
 <section id="random-posts" class="post-grid"></section>
@@ -22,6 +23,7 @@
   gap: 10px;
   padding: 10px;
 }
+
 @media (min-width: 600px) {
   .post-grid { grid-template-columns: repeat(3, 1fr); }
 }
@@ -29,45 +31,48 @@
   .post-grid { grid-template-columns: repeat(4, 1fr); }
 }
 
-.post-grid a {
+.post-item {
   position: relative;
-  display: block;
   overflow: hidden;
   border-radius: 10px;
   background: #f0f0f0;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
-.post-grid a:hover {
+
+.post-item:hover {
   transform: scale(1.03);
   box-shadow: 0 3px 12px rgba(0,0,0,0.1);
 }
 
-/* Skeleton Placeholder */
+/* Skeleton / placeholder */
 .skeleton {
-  position: relative;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e6e6e6 37%, #f0f0f0 63%);
-  background-size: 400% 100%;
-  animation: skeleton-loading 1.4s ease infinite;
-  padding-top: 56.25%; /* 16:9 */
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: linear-gradient(90deg, #eee 25%, #ddd 50%, #eee 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
   border-radius: 10px;
 }
-@keyframes skeleton-loading {
-  0% { background-position: 100% 0; }
-  100% { background-position: -100% 0; }
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
-.post-grid img {
-  position: absolute;
-  top: 0; left: 0;
+.post-item img {
   width: 100%;
-  height: 100%;
+  height: auto;
+  display: block;
   object-fit: cover;
+  border-radius: 10px;
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.5s ease;
 }
-.post-grid img.loaded { opacity: 1; }
 
-/* Play Icon */
+.post-item img.loaded {
+  opacity: 1;
+}
+
+/* Ikon play transparan */
 .play-icon {
   position: absolute;
   top: 50%;
@@ -75,112 +80,94 @@
   transform: translate(-50%, -50%);
   width: 60px;
   height: 60px;
+  background: rgba(0,0,0,0.5);
   border-radius: 50%;
-  background: rgba(0,0,0,0.35);
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: none;
 }
-.play-icon::after {
-  content: "";
-  display: block;
+.play-icon::before {
+  content: '';
   width: 0;
   height: 0;
-  border-left: 16px solid rgba(255,255,255,0.9);
+  border-left: 16px solid white;
   border-top: 10px solid transparent;
   border-bottom: 10px solid transparent;
-  margin-left: 5px;
-}
-.post-grid a:hover .play-icon {
-  background: rgba(0,0,0,0.55);
+  margin-left: 4px;
 }
 
-#load-more:hover { background:#444; }
+#load-more:hover {
+  background:#444;
+}
 </style>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const container = document.getElementById("random-posts");
-  const button = document.getElementById("load-more");
-  const batchSize = 12;
-  let allPosts = [];
-  let currentIndex = 0;
+let allPosts = [];
+let currentIndex = 0;
+const batchSize = 12;
+const container = document.getElementById('random-posts');
+const button = document.getElementById('load-more');
 
-  // --- FIX PATH untuk GitHub Pages baseurl ---
-  const base = document.querySelector('base')?.href || window.location.pathname.split('/')[1] ? '/' + window.location.pathname.split('/')[1] : '';
-  const jsonUrl = base && base !== '/' ? `${base}/posts.json` : '/posts.json';
+const basePath = window.location.origin;
+const jsonPath = basePath + '{{ "/posts.json" | relative_url }}';
 
-  // --- Observer untuk lazy load ---
+fetch(jsonPath)
+  .then(res => {
+    if (!res.ok) throw new Error(res.status);
+    return res.json();
+  })
+  .then(data => {
+    allPosts = data.sort(() => Math.random() - 0.5);
+    renderPosts();
+  })
+  .catch(err => {
+    console.error('Gagal memuat posts.json:', err);
+    container.innerText = 'Gagal memuat data postingan.';
+  });
+
+function renderPosts() {
+  const nextBatch = allPosts.slice(currentIndex, currentIndex + batchSize);
+  nextBatch.forEach(post => {
+    const wrapper = document.createElement('a');
+    wrapper.href = post.url;
+    wrapper.className = 'post-item';
+    wrapper.innerHTML = `
+      <div class="skeleton"></div>
+      <img data-src="${post.image}" alt="${post.title}">
+      <div class="play-icon"></div>
+    `;
+    container.appendChild(wrapper);
+  });
+
+  lazyLoadImages();
+
+  currentIndex += batchSize;
+  if (currentIndex >= allPosts.length) button.style.display = 'none';
+}
+
+function lazyLoadImages() {
+  const imgs = container.querySelectorAll('img[data-src]');
   const observer = new IntersectionObserver((entries, obs) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         const img = entry.target;
-        const dataSrc = img.getAttribute('data-src');
-        if (dataSrc) {
-          img.src = dataSrc;
-          img.addEventListener('load', () => {
-            img.classList.add('loaded');
-            const skeleton = img.previousElementSibling;
-            if (skeleton && skeleton.classList.contains('skeleton')) skeleton.remove();
-          }, { once: true });
-          img.removeAttribute('data-src');
-        }
+        img.src = img.dataset.src;
+        img.addEventListener('load', () => {
+          img.classList.add('loaded');
+          const skeleton = img.previousElementSibling;
+          if (skeleton && skeleton.classList.contains('skeleton')) {
+            skeleton.remove();
+          }
+        });
         obs.unobserve(img);
       }
     });
-  }, { rootMargin: '120px' });
+  }, { rootMargin: '100px' });
 
-  // --- Ambil posts.json ---
-  fetch(jsonUrl)
-    .then(res => {
-      if (!res.ok) throw new Error(res.statusText);
-      return res.json();
-    })
-    .then(data => {
-      allPosts = Array.isArray(data) ? data.sort(() => Math.random() - 0.5) : [];
-      renderPosts();
-    })
-    .catch(err => {
-      console.error('Gagal memuat posts.json:', err);
-      container.textContent = 'Gagal memuat data postingan.';
-    });
+  imgs.forEach(img => observer.observe(img));
+}
 
-  function renderPosts() {
-    const nextBatch = allPosts.slice(currentIndex, currentIndex + batchSize);
-    const frag = document.createDocumentFragment();
-
-    nextBatch.forEach(post => {
-      const a = document.createElement('a');
-      a.href = post.url;
-      a.setAttribute('aria-label', post.title);
-
-      const skeleton = document.createElement('div');
-      skeleton.className = 'skeleton';
-
-      const img = document.createElement('img');
-      img.setAttribute('data-src', post.image);
-      img.alt = post.title;
-
-      const play = document.createElement('div');
-      play.className = 'play-icon';
-
-      a.appendChild(skeleton);
-      a.appendChild(img);
-      a.appendChild(play);
-      frag.appendChild(a);
-
-      observer.observe(img);
-    });
-
-    container.appendChild(frag);
-    currentIndex += batchSize;
-
-    if (currentIndex >= allPosts.length) button.style.display = 'none';
-  }
-
-  button.addEventListener('click', renderPosts);
-});
+button.addEventListener('click', renderPosts);
 </script>
 
 <!-- awal photo gallery -->
