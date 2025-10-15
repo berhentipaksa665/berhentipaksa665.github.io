@@ -35,6 +35,7 @@
   }
 }
 
+/* anchor harus relatif supaya anak absolute positioned bekerja */
 .post-grid a {
   position: relative;
   display: block;
@@ -42,6 +43,7 @@
   border-radius: 10px;
   background: #f0f0f0;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
+  min-height: 0; /* pastikan tidak collapse */
 }
 
 .post-grid a:hover {
@@ -49,6 +51,7 @@
   box-shadow: 0 3px 12px rgba(0,0,0,0.1);
 }
 
+/* Skeleton placeholder dengan aspect-ratio 16:9 */
 .skeleton {
   position: relative;
   background: linear-gradient(90deg, #f0f0f0 25%, #e6e6e6 37%, #f0f0f0 63%);
@@ -58,11 +61,13 @@
   border-radius: 10px;
 }
 
+/* Animasi skeleton */
 @keyframes skeleton-loading {
   0% { background-position: 100% 0; }
   100% { background-position: -100% 0; }
 }
 
+/* Gambar di-overlay absolute */
 .post-grid img {
   position: absolute;
   top: 0; left: 0;
@@ -70,28 +75,45 @@
   height: 100%;
   object-fit: cover;
   opacity: 0;
-  transition: opacity 0.5s ease;
+  transition: opacity 0.45s ease;
+  border-radius: 10px;
 }
 
+/* Setelah terload */
 .post-grid img.loaded {
   opacity: 1;
 }
 
+/* Play icon (transparan di tengah) */
 .play-icon {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 48px;
-  height: 48px;
-  background: rgba(0,0,0,0.5);
-  clip-path: polygon(30% 20%, 30% 80%, 80% 50%);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.35); /* transparan */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   pointer-events: none;
-  transition: background 0.3s ease;
+}
+
+/* triangle inside */
+.play-icon::after {
+  content: "";
+  display: block;
+  width: 0;
+  height: 0;
+  border-left: 14px solid rgba(255,255,255,0.95);
+  border-top: 9px solid transparent;
+  border-bottom: 9px solid transparent;
+  margin-left: 4px;
 }
 
 .post-grid a:hover .play-icon {
-  background: rgba(0,0,0,0.7);
+  background: rgba(0,0,0,0.55);
 }
 
 #load-more:hover {
@@ -100,61 +122,112 @@
 </style>
 
 <script>
-let allPosts = [];
-let currentIndex = 0;
-const batchSize = 12;
-const container = document.getElementById('random-posts');
-const button = document.getElementById('load-more');
+document.addEventListener('DOMContentLoaded', () => {
+  let allPosts = [];
+  let currentIndex = 0;
+  const batchSize = 12;
+  const container = document.getElementById('random-posts');
+  const button = document.getElementById('load-more');
 
-fetch('/posts.json')
-  .then(res => res.json())
-  .then(data => {
-    allPosts = data.sort(() => Math.random() - 0.5);
-    renderPosts();
-  })
-  .catch(err => {
-    console.error('Gagal memuat posts.json:', err);
-    container.innerText = 'Gagal memuat data postingan.';
-  });
+  if (!container) return console.error('Container #random-posts tidak ditemukan.');
 
-function renderPosts() {
-  const nextBatch = allPosts.slice(currentIndex, currentIndex + batchSize);
-
-  const html = nextBatch.map(post => `
-    <a href="${post.url}">
-      <div class="skeleton"></div>
-      <img data-src="${post.image}" alt="${post.title}" loading="lazy">
-      <div class="play-icon"></div>
-    </a>
-  `).join('');
-
-  container.insertAdjacentHTML('beforeend', html);
-  observeImages();
-
-  currentIndex += batchSize;
-  if (currentIndex >= allPosts.length) button.style.display = 'none';
-}
-
-function observeImages() {
-  const imgs = container.querySelectorAll('img[data-src]');
-  const observer = new IntersectionObserver(entries => {
+  // Global IntersectionObserver (dipakai ulang)
+  const imgObserver = new IntersectionObserver((entries, obs) => {
     entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const img = entry.target;
-        const skeleton = img.previousElementSibling;
-        img.src = img.dataset.src;
+      if (!entry.isIntersecting) return;
+      const img = entry.target;
+      const dataSrc = img.getAttribute('data-src');
+      if (dataSrc) {
+        // set src dari data-src
+        img.src = dataSrc;
+        // ketika load selesai, tambahkan class .loaded dan hapus skeleton jika ada
         img.addEventListener('load', () => {
           img.classList.add('loaded');
-          if (skeleton) skeleton.remove();
-        });
-        observer.unobserve(img);
+          // skeleton diasumsikan adalah previousElementSibling; cek aman
+          const possibleSkeleton = img.previousElementSibling;
+          if (possibleSkeleton && possibleSkeleton.classList && possibleSkeleton.classList.contains('skeleton')) {
+            possibleSkeleton.remove();
+          }
+        }, { once: true });
+
+        img.removeAttribute('data-src');
+      }
+      obs.unobserve(img);
+    });
+  }, { rootMargin: '120px 0px', threshold: 0.01 });
+
+  // Fetch posts.json dan render batch pertama
+  fetch('/posts.json')
+    .then(res => {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    })
+    .then(data => {
+      if (!Array.isArray(data)) throw new Error('posts.json bukan array');
+      allPosts = data.sort(() => Math.random() - 0.5);
+      renderPosts();
+    })
+    .catch(err => {
+      console.error('Gagal memuat posts.json:', err);
+      container.innerText = 'Gagal memuat data postingan.';
+    });
+
+  // Render next batch
+  function renderPosts() {
+    if (!allPosts || allPosts.length === 0) return;
+    const nextBatch = allPosts.slice(currentIndex, currentIndex + batchSize);
+
+    const frag = document.createDocumentFragment();
+    nextBatch.forEach(post => {
+      // buat anchor
+      const a = document.createElement('a');
+      a.href = post.url || '#';
+      a.setAttribute('aria-label', post.title || 'video');
+
+      // skeleton placeholder (menyediakan aspect ratio)
+      const skel = document.createElement('div');
+      skel.className = 'skeleton';
+
+      // img dengan data-src (belum dimuat)
+      const img = document.createElement('img');
+      img.setAttribute('data-src', post.image || '');
+      img.alt = post.title ? post.title.replace(/"/g, '') : '';
+
+      // play icon
+      const play = document.createElement('div');
+      play.className = 'play-icon';
+      // susun: skeleton dulu, lalu img, lalu play icon
+      a.appendChild(skel);
+      a.appendChild(img);
+      a.appendChild(play);
+
+      frag.appendChild(a);
+
+      // observe image untuk lazy load
+      if (img.getAttribute('data-src')) {
+        imgObserver.observe(img);
+      } else {
+        // jika tidak ada data-src, langsung tandai loaded agar tampil
+        img.classList.add('loaded');
+        skel.remove();
       }
     });
-  }, { rootMargin: '100px' });
-  imgs.forEach(img => observer.observe(img));
-}
 
-button.addEventListener('click', renderPosts);
+    container.appendChild(frag);
+
+    currentIndex += batchSize;
+    if (currentIndex >= allPosts.length && button) {
+      button.style.display = 'none';
+    }
+  }
+
+  // tombol load more
+  if (button) {
+    button.addEventListener('click', () => {
+      renderPosts();
+    });
+  }
+});
 </script>
 
 <!-- awal photo gallery -->
