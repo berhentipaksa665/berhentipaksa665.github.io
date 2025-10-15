@@ -1,75 +1,127 @@
+
+<h3>More Video</h3>
+<section id="random-posts" class="post-grid">
+  Memuat...
+</section>
+
+<div style="text-align:center; margin:20px;">
+  <button id="load-more" style="
+    background:#222;
+    color:#fff;
+    border:none;
+    padding:10px 20px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:15px;
+    transition:background 0.3s ease;
+  ">Load More Posts</button>
+</div>
+
 <style>
-.masonryuGallery2-container {
-  column-count: 3;
-  column-gap: 0;
+.post-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: 10px;
 }
+
 @media (min-width: 600px) {
-  .masonryuGallery2-container { column-count: 4; }
+  .post-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
+
 @media (min-width: 1000px) {
-  .masonryuGallery2-container { column-count: 4; }
+  .post-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
-.masonryuGallery2-container .masonryu-item {
-  break-inside: avoid;
-  margin: 0;
-  padding: 0;
+
+.post-grid a {
+  display: block;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #f8f8f8;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
-.masonryuGallery2-container a { display: block; width: 100%; }
-.masonryuGallery2-container img {
+
+.post-grid a:hover {
+  transform: scale(1.03);
+  box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+}
+
+.post-grid img {
   width: 100%;
   height: auto;
   display: block;
   object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.post-grid img.loaded {
+  opacity: 1;
+}
+
+#load-more:hover {
+  background:#444;
 }
 </style>
 
-<div class="masonryuGallery2-container" id="masonryuGallery2-feed"></div>
-
 <script>
-function showFeed(json) {
-  const entries = json.feed.entry || [];
-  if (entries.length === 0) return;
+let allPosts = [];
+let currentIndex = 0;
+const batchSize = 12; // jumlah posting per klik
+const container = document.getElementById('random-posts');
+const button = document.getElementById('load-more');
 
-  function shuffle(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-  }
-
-  shuffle(entries);
-  const container = document.getElementById("masonryuGallery2-feed");
-
-  function getPostUrl(entry) {
-    return entry.link.find(l => l.rel === "alternate").href;
-  }
-
-  function extractImage(entry) {
-    const content = entry.content?.$t || '';
-    const imgMatch = content.match(/<img[^>]+src="([^">]+)"/);
-    return imgMatch ? imgMatch[1] : "https://via.placeholder.com/300x200?text=No+Image";
-  }
-
-  let html = '';
-  entries.slice(0, 150).forEach(entry => {
-    const img = extractImage(entry);
-    const url = getPostUrl(entry);
-    const title = entry.title.$t;
-    html += `
-      <div class="masonryu-item">
-        <a href="${url}" title="${title}">
-          <img src="${img}" alt="${title}">
-        </a>
-      </div>`;
+fetch('/posts.json')
+  .then(res => res.json())
+  .then(data => {
+    // Acak urutan postingan
+    allPosts = data.sort(() => Math.random() - 0.5);
+    // Tampilkan batch pertama
+    renderPosts();
+  })
+  .catch(err => {
+    console.error('Gagal memuat posts.json:', err);
+    container.innerText = 'Gagal memuat data postingan.';
   });
 
-  container.innerHTML = html;
+function renderPosts() {
+  const nextBatch = allPosts.slice(currentIndex, currentIndex + batchSize);
+
+  const html = nextBatch.map(post => `
+    <a href="${post.url}">
+      <img src="${post.image}" alt="${post.title}" loading="lazy">
+    </a>
+  `).join('');
+
+  container.insertAdjacentHTML('beforeend', html);
+  fadeInImages();
+
+  currentIndex += batchSize;
+
+  // Sembunyikan tombol jika sudah habis
+  if (currentIndex >= allPosts.length) {
+    button.style.display = 'none';
+  }
 }
 
-// JSONP version: Blogger feed + callback
-document.write('<script src="https://www.raiska.my.id/feeds/posts/default?alt=json-in-script&callback=showFeed&max-results=9999"></' + 'script>');
-</script>
+function fadeInImages() {
+  const imgs = container.querySelectorAll('img:not(.loaded)');
+  imgs.forEach(img => {
+    if (img.complete) {
+      img.classList.add('loaded');
+    } else {
+      img.addEventListener('load', () => img.classList.add('loaded'));
+    }
+  });
+}
 
+button.addEventListener('click', renderPosts);
+</script>
+<hr />
 <!-- awal photo gallery -->
 <hr />
 <h3>Photo Artis Seksi</h3>
@@ -146,5 +198,4 @@ document.write('<script src="https://www.raiska.my.id/feeds/posts/default?alt=js
 </script>
 <!-- akhir photo gallery -->
 	<hr /><br />
-
-
+	
