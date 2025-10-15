@@ -1,699 +1,108 @@
 ---
 layout: null
 ---
- 
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
- <link rel="stylesheet" href="https://adabunalima5.github.io/file/css/css008080.css"/> 
-  
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
-<link rel="shortcut icon" href="/favicon.ico" />
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-<link rel="manifest" href="/site.webmanifest" />
-<meta name="theme-color" content="#317EFB" />
-
-{% include verif.html %}
-
-	
-{% include head.html %}	
-
-
-<!-- awal Seo Otomatis khusus untuk Homepage -->
-<script>
-(function () {
-  const hostname = location.hostname;
-  const pathname = location.pathname;
-
-  let subdomainRaw = hostname.split('.')[0];
-  if (subdomainRaw.toLowerCase() === 'www') subdomainRaw = hostname.split('.')[1] || '';
-
-  const formatText = str => str
-    .replace(/[-_]/g, ' ')
-    .replace(/\+/g, ' ')         // tambahan: ganti + jadi spasi
-    .replace(/\b\w/g, c => c.toUpperCase());
-
-  const subdomain = formatText(subdomainRaw.trim());
-  const cleanPath = pathname.replace(/^\/+|\/+$/g, '');
-  const isHome = !cleanPath || /^index\.(html?|php)$/i.test(cleanPath);
-
-  let rawPageName = cleanPath.split('/').pop() || '';
-  rawPageName = rawPageName.replace(/\.[^.]+$/, '').trim(); // hilangkan ekstensi
-  rawPageName = decodeURIComponent(rawPageName);
-
-  let titleText = isHome
-    ? subdomain
-    : `${formatText(rawPageName)} - ${subdomain}`;
-
-  // Title
-  let titleTag = document.querySelector('title') || document.createElement('title');
-  titleTag.textContent = titleText;
-  if (!titleTag.parentNode) document.head.appendChild(titleTag);
-
-  // Meta author
-  let metaAuthor = document.querySelector('meta[name="author"]') || document.createElement('meta');
-  metaAuthor.name = 'author';
-  metaAuthor.content = `${subdomain} team`;
-  if (!metaAuthor.parentNode) document.head.appendChild(metaAuthor);
-
-  // OG image
-  let firstImage = document.querySelector('img');
-  let ogImageUrl = firstImage
-    ? (firstImage.src.startsWith('http') ? firstImage.src : location.origin + '/' + firstImage.src)
-    : location.origin + '/photo/fallback.png';
-
-  const setMeta = (attr, key, value) => {
-    let meta = document.querySelector(`${attr === 'property' ? 'meta[property' : 'meta[name'}="${key}"]`) || document.createElement('meta');
-    meta.setAttribute(attr, key);
-    meta.setAttribute('content', value);
-    if (!meta.parentNode) document.head.appendChild(meta);
-  };
-
-  setMeta('property', 'og:title', titleText);
-  setMeta('property', 'og:image', '/photo/fallback.png');
-  setMeta('property', 'og:url', location.href);
-  setMeta('property', 'og:type', 'website');
-
-  // Schema.org WebSite tanpa potentialAction (hilangkan sitelink search)
-  const schemaData = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": subdomain,
-    "url": location.origin
-  };
-  let schemaScript = document.createElement('script');
-  schemaScript.type = 'application/ld+json';
-  schemaScript.textContent = JSON.stringify(schemaData);
-  document.head.appendChild(schemaScript);
-
-  // Canonical otomatis sesuai halaman saat ini
-  let canonical = document.querySelector('link[rel="canonical"]') || document.createElement('link');
-  canonical.setAttribute('rel', 'canonical');
-  canonical.setAttribute('href', location.href);
-  if (!canonical.parentNode) document.head.appendChild(canonical);
-
-})();
-</script>
-<!-- akhir Seo Otomatis khusus untuk homepage -->
-<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"/>
-
-<style>
-.recent-posts {
-  margin: 3rem auto;
-  padding: 0 1rem;
-  max-width: 1200px;
-}
-.recent-posts h2 {
-  font-size: 2rem;
-  text-align: center;
-  margin-bottom: 2rem;
-}
-.recent-posts .grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-}
-.post-card {
-  background: #fff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-  transition: transform 0.2s ease;
-}
-.post-card:hover {
-  transform: translateY(-5px);
-}
-.post-card img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-.post-card h3 {
-  font-size: 1.2rem;
-  margin: 1rem;
-}
-.post-card h3 a {
-  text-decoration: none;
-  color: #222;
-}
-.post-card p {
-  font-size: 0.95rem;
-  margin: 0 1rem 1rem;
-  color: #555;
-}
-
-/* Pagination */
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 2rem;
-  gap: 1rem;
-}
-.pagination button {
-  background: var(--dynamic-color);
-  color: #000;
-  border: none;
-  padding: 0.5rem 1.2rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  transition: background 0.2s ease;
-}
-.pagination button:hover:not(:disabled) {
-  background: var(--dynamic-color);
-}
-.pagination button:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-.pagination span {
-  font-size: 0.95rem;
-  color: #333;
-}
-</style>
-
-
-
-
-
-<link rel="sitemap" type="application/xml" href="" id="sitemap-main">
-<link rel="alternate" type="application/rss+xml" href="" id="sitemap-feed">
-
-<script>
-(function() {
-  var origin = window.location.origin;
-  document.getElementById("sitemap-main").href = origin + "/sitemap.xml";
-  document.getElementById("sitemap-feed").href = origin + "/feed.xml";
-})();
-</script>	
-
-
-	
-  </head>
-<body>
-
-<header style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--dynamic-color);">
-  <h1 id="mainTitle" style="
-      margin:0;
-      font-size:16px;
-      color:#fff;
-      flex:1;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;"></h1>
-  <div class="nav-actions" style="margin-left:10px;flex-shrink:0;">
-    <button class="nav-button" id="menuToggle" title="Menu" aria-label="Menu" 
-            style="background:none;border:none;cursor:pointer;">
-      <!-- Hamburger Icon -->
-      <svg id="iconMenu" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" 
-           style="width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2;">
-        <path d="M3 6h18M3 12h18M3 18h18"/>
-      </svg>
-      <!-- Close Icon -->
-      <svg id="iconClose" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" 
-           style="display:none;width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2;">
-        <path d="M6 6l12 12M6 18l12-12"/>
-      </svg>
-    </button>
-  </div>
-</header>
-
-<script>
-(function(){
-  const host = window.location.hostname.split(".");
-
-  let sub = "";
-
-  if (host[0] === "www") {
-    // www.domain.my.id → ambil host[1]
-    sub = host[1];
-  } else if (host.length === 3) {
-    // domain.my.id → ambil host[0]
-    sub = host[0];
-  } else if (host.length === 4) {
-    // sub01.domain.my.id → ambil host[0]
-    sub = host[0];
-  } else {
-    // fallback, ambil bagian pertama
-    sub = host[0];
-  }
-
-  const clean = sub.replace(/-/g, " "); // ganti strip jadi spasi
-  const title = clean.replace(/\b\w/g, c => c.toUpperCase()); // kapital awal kata
-  document.getElementById("mainTitle").textContent = title;
-})();
-</script>
-
-<div id="menuPanel" style="display:none;background:#333;padding:10px;">
-  <ul style="list-style:none;margin:0;padding:0;">
-    <li><a href="/" style="color:#fff;text-decoration:none;display:block;padding:5px 0;">Home</a></li>
-    <li><a href="/contact.html" style="color:#fff;text-decoration:none;display:block;padding:5px 0;">Contact</a></li>
-    <li><a href="/privacy-policy.html" style="color:#fff;text-decoration:none;display:block;padding:5px 0;">Privacy Policy</a></li>
-    <li><a href="/terms-and-conditions.html" style="color:#fff;text-decoration:none;display:block;padding:5px 0;">Terms & Conditions</a></li>
-  </ul>
-</div>
-
-<script>
-  const toggleBtn = document.getElementById('menuToggle');
-  const menuPanel = document.getElementById('menuPanel');
-  const iconMenu = document.getElementById('iconMenu');
-  const iconClose = document.getElementById('iconClose');
-
-  toggleBtn.addEventListener('click', () => {
-    const isVisible = menuPanel.style.display === 'block';
-    menuPanel.style.display = isVisible ? 'none' : 'block';
-    iconMenu.style.display = isVisible ? 'inline' : 'none';
-    iconClose.style.display = isVisible ? 'none' : 'inline';
-  });
-</script>
-
-<main>
-	
-
-
-<section class="recent-posts">      
-  <div id="recent-posts-container" class="grid"></div>      
-  <div id="pagination" class="pagination"></div>      
-</section>      
-
-<style>
-.post-card {
-  position: relative;
-  overflow: hidden;
-}
-
-.post-skeleton {
-  width: 100%;
-  aspect-ratio: 16/9;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 37%, #f0f0f0 63%);
-  background-size: 400% 100%;
-  animation: shimmer 1.4s ease infinite;
-  border-radius: 8px;
-}
-
-@keyframes shimmer {
-  0% { background-position: -400% 0; }
-  100% { background-position: 400% 0; }
-}
-
-.play-icon {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 60px;
-  height: 60px;
-  background: rgba(0,0,0,0.5);
-  mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>') no-repeat center;
-  mask-size: 60%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  opacity: 0.8;
-  border-radius: 50%;
-}
-</style>
-
-<script>
-function getCategoryCandidates(hostname) {      
-  const parts = hostname.split('.');      
-  if (parts.length < 2) return { sub: null, domain: null };      
-  const maybeDomainIndex = parts.length - 3;      
-  const domain = (maybeDomainIndex >= 0) ? parts[maybeDomainIndex] : parts[0];      
-  const subLabels = (maybeDomainIndex > 0) ? parts.slice(0, maybeDomainIndex) : [];      
-  const rawSub = subLabels.length ? subLabels.join('.') : null;      
-  const normalize = s => String(s || '').replace(/[-.]+/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();      
-  return { sub: rawSub ? normalize(rawSub) : null, domain: domain ? normalize(domain) : null };      
-}      
-
-const urlParams = new URLSearchParams(window.location.search);
-const initialPage = parseInt(urlParams.get('page')) || 1;
-const { sub: subCategory, domain: domainCategory } = getCategoryCandidates(window.location.hostname);      
-const POSTS_PER_PAGE = 6;      
-let currentPage = initialPage;      
-let filteredPosts = [];      
-
-fetch('/posts.json')      
-  .then(res => {      
-    if (!res.ok) throw new Error('Failed to load posts.json');      
-    return res.json();      
-  })      
-  .then(posts => {      
-    const normalize = s => String(s || '').replace(/[-.]+/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();      
-    if (!Array.isArray(posts) || posts.length === 0) return renderNoPosts();      
-
-    if (subCategory) {      
-      filteredPosts = posts.filter(p => Array.isArray(p.categories) && p.categories.some(c => normalize(c) === subCategory));      
-    }      
-    if (filteredPosts.length === 0 && domainCategory) {      
-      filteredPosts = posts.filter(p => Array.isArray(p.categories) && p.categories.some(c => normalize(c) === domainCategory));      
-    }      
-    if (filteredPosts.length === 0) filteredPosts = posts;      
-
-    filteredPosts.sort((a, b) => new Date(b.date) - new Date(a.date));      
-    renderPosts();      
-  })      
-  .catch(err => { console.error('Error loading posts:', err); renderNoPosts(); });      
-
-function renderPosts() {      
-  const container = document.getElementById('recent-posts-container');      
-  const pagination = document.getElementById('pagination');      
-  container.innerHTML = '';      
-  pagination.innerHTML = '';      
-
-  const start = (currentPage - 1) * POSTS_PER_PAGE;      
-  const end = start + POSTS_PER_PAGE;      
-  const pagePosts = filteredPosts.slice(start, end);      
-
-  pagePosts.forEach(post => {      
-    const card = document.createElement('div');      
-    card.className = 'post-card';      
-
-    const linkImg = document.createElement('a');      
-    linkImg.href = post.url || '#';      
-
-    const skeleton = document.createElement('div');      
-    skeleton.className = 'post-skeleton';      
-    linkImg.appendChild(skeleton);      
-
-    const img = document.createElement('img');      
-    img.dataset.src = post.image || '/assets/default-thumb.jpg';      
-    img.alt = post.title || '';      
-    img.style.width = '100%';      
-    img.style.height = 'auto';      
-    img.style.display = 'none';      
-
-    img.onload = () => {      
-      skeleton.remove();      
-      img.style.display = 'block';      
-    };      
-
-    const playIcon = document.createElement('div');      
-    playIcon.className = 'play-icon';      
-    linkImg.appendChild(img);      
-    linkImg.appendChild(playIcon);      
-    card.appendChild(linkImg);      
-
-    const h3 = document.createElement('h3');      
-    const linkTitle = document.createElement('a');      
-    linkTitle.href = post.url || '#';      
-    linkTitle.textContent = post.title || '(no title)';      
-    h3.appendChild(linkTitle);      
-    card.appendChild(h3);      
-
-    container.appendChild(card);      
-  });      
-
-  setupLazyLoad();
-
-  const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);      
-  if (totalPages > 1) {      
-    const prevBtn = document.createElement('button');      
-    prevBtn.textContent = 'Prev';      
-    prevBtn.disabled = currentPage === 1;      
-    prevBtn.onclick = () => changePage(currentPage - 1);      
-    pagination.appendChild(prevBtn);      
-
-    const maxVisible = 5;      
-    let startPage = Math.max(1, currentPage - 2);      
-    let endPage = Math.min(totalPages, currentPage + 2);      
-
-    if (currentPage <= 3) endPage = Math.min(totalPages, maxVisible);      
-    else if (currentPage >= totalPages - 2) startPage = Math.max(1, totalPages - maxVisible + 1);      
-
-    if (startPage > 1) { addPageButton(1); if (startPage > 2) addEllipsis(); }      
-    for (let i = startPage; i <= endPage; i++) addPageButton(i);      
-    if (endPage < totalPages) { if (endPage < totalPages - 1) addEllipsis(); addPageButton(totalPages); }      
-
-    const nextBtn = document.createElement('button');      
-    nextBtn.textContent = 'Next';      
-    nextBtn.disabled = currentPage === totalPages;      
-    nextBtn.onclick = () => changePage(currentPage + 1);      
-    pagination.appendChild(nextBtn);      
-  }      
-}      
-
-function setupLazyLoad() {      
-  const images = document.querySelectorAll('img[data-src]');      
-  const observer = new IntersectionObserver((entries, obs) => {      
-    entries.forEach(entry => {      
-      if (entry.isIntersecting) {      
-        const img = entry.target;      
-        img.src = img.dataset.src;      
-        obs.unobserve(img);      
-      }      
-    });      
-  }, { rootMargin: '100px' });      
-
-  images.forEach(img => observer.observe(img));      
-}
-
-function changePage(page) {      
-  currentPage = page;      
-  renderPosts();      
-  const newUrl = `${window.location.pathname}?page=${String(page).padStart(2, '0')}`;      
-  history.pushState({}, '', newUrl);      
-}      
-
-function addPageButton(page) {      
-  const pagination = document.getElementById('pagination');      
-  const pageBtn = document.createElement('button');      
-  pageBtn.textContent = page;      
-  if (page === currentPage) { pageBtn.disabled = true; pageBtn.style.fontWeight = 'bold'; }      
-  pageBtn.onclick = () => changePage(page);      
-  pagination.appendChild(pageBtn);      
-}      
-
-function addEllipsis() {      
-  const pagination = document.getElementById('pagination');      
-  const span = document.createElement('span');      
-  span.textContent = '…';      
-  pagination.appendChild(span);      
-}      
-
-function renderNoPosts() {      
-  const container = document.getElementById('recent-posts-container');      
-  const pagination = document.getElementById('pagination');      
-  container.innerHTML = '<p>No posts found.</p>';      
-  pagination.innerHTML = '';      
-}      
-</script>
-
-
-<!-- awal include mengambil dari folder /includes/ berdasarkan nama subdomain/domain -->
-  <div class="spo" id="dynamic-include"></div>
-  <script>
-    const host = window.location.hostname.toLowerCase();
-    const parts = host.split(".");
-    const container = document.getElementById("dynamic-include");
-
-    // Nama subdomain (jika ada) dan domain utama
-    let subdomain = parts.length > 2 ? parts[0].replace(/[^a-z0-9\-]/g, "") : null;
-    let domain = parts.length > 2 ? parts[1].replace(/[^a-z0-9\-]/g, "") : parts[0].replace(/[^a-z0-9\-]/g, "");
-
-    // Kandidat file sesuai aturan
-    let subFile = subdomain ? subdomain + ".html" : null;
-    let domainFile = domain + ".html";
-    let fallbackFile = "fallback.html";
-
-    // Fungsi untuk mencoba load file berurutan
-    function loadFile(fileList) {
-      if (fileList.length === 0) return;
-
-      const file = fileList.shift();
-      fetch("/includes/" + file)
-        .then(r => {
-          if (!r.ok) throw new Error("not found");
-          return r.text();
-        })
-        .then(html => container.innerHTML = html)
-        .catch(() => loadFile(fileList)); // coba file berikutnya
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ site.title | default: "Video Blog" }}</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #000;
+      margin: 0;
+      padding: 1rem;
+      display: flex;
+      justify-content: center;
     }
 
-    // Susun urutan fallback
-    const filesToTry = [];
-    if (subFile) filesToTry.push(subFile); // coba subdomain dulu
-    filesToTry.push(domainFile);           // lalu domain
-    filesToTry.push(fallbackFile);         // terakhir fallback
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+      width: 100%;
+      max-width: 1200px;
+    }
 
-    // Jalankan loader
-    loadFile(filesToTry);
-  </script>
-<!-- akhir include -->
-</main>
+    .video-item {
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+      cursor: pointer;
+      aspect-ratio: 16 / 9;
+    }
 
+    .video-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+      display: block;
+    }
 
-<!-- awal search -->
-<div class="widget-search" role="search">
-  <form id="customSearchForm" method="get" action="/search/">
-    <a href="/" id="homeLink" class="home-btn" aria-label="Home">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewbox="0 0 24 24" width="22" height="22">
-        <path d="M3 10.5l9-7 9 7V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1v-9.5z"/>
-      </svg>
-    </a>
-    <input 
-      id="searchInput"
-      type="text"
-      name="q"
-      placeholder="Search..."
-      autocomplete="on"/>
-    <button type="submit" class="search-btn" aria-label="Search">
-      <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" width="22" height="22" fill="currentColor">
-        <path d="M21 20l-5.8-5.8a7 7 0 10-1.4 1.4L20 21l1-1zM4 10a6 6 0 1112 0 6 6 0 01-12 0z"/>
-      </svg>
-    </button>
-  </form>
-</div>
-<!-- akhir search -->
+    .video-item:hover img {
+      transform: scale(1.05);
+      opacity: 0.9;
+    }
 
-    <br /><br />
+    .play-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 50px;
+      height: 50px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-<center><pre>ads by Adsterra to keep my blog alive</pre><hr />
-<!--Adsterra by - download-def.blogspot.com - Downloads -->
-<script type="text/javascript">
-	atOptions = {
-		'key' : '372c305fe9278ddc0e2a01420d27b80e',
-		'format' : 'iframe',
-		'height' : 250,
-		'width' : 300,
-		'params' : {}
-	};
-</script>
-<script type="text/javascript" src="//www.highperformanceformat.com/372c305fe9278ddc0e2a01420d27b80e/invoke.js"></script>
-<hr />
-<script type="text/javascript">
-	atOptions = {
-		'key' : '20cc5501ffce3b330a154a03d6641747',
-		'format' : 'iframe',
-		'height' : 90,
-		'width' : 728,
-		'params' : {}
-	};
-</script>
-<script type="text/javascript" src="//www.highperformanceformat.com/20cc5501ffce3b330a154a03d6641747/invoke.js"></script>
-<hr />
-<script type="text/javascript">
-	atOptions = {
-		'key' : 'abe7e2e27aed29c68dd6c23e1f5556cb',
-		'format' : 'iframe',
-		'height' : 600,
-		'width' : 160,
-		'params' : {}
-	};
-</script>
-<script type="text/javascript" src="//www.highperformanceformat.com/abe7e2e27aed29c68dd6c23e1f5556cb/invoke.js"></script>
-<hr />
-<script type="text/javascript">
-	atOptions = {
-		'key' : 'b4e3ba98ed663d56a30832ea16e1736e',
-		'format' : 'iframe',
-		'height' : 300,
-		'width' : 160,
-		'params' : {}
-	};
-</script>
-<script type="text/javascript" src="//www.highperformanceformat.com/b4e3ba98ed663d56a30832ea16e1736e/invoke.js"></script>
-<hr />
-<script type="text/javascript">
-	atOptions = {
-		'key' : '2d323dc4a9ee54726d3cc9e3d7a5a824',
-		'format' : 'iframe',
-		'height' : 300,
-		'width' : 160,
-		'params' : {}
-	};
-</script>
-<script type="text/javascript" src="//www.highperformanceformat.com/2d323dc4a9ee54726d3cc9e3d7a5a824/invoke.js"></script>
-<hr />
-<script type="text/javascript">
-	atOptions = {
-		'key' : '78677d1430cf6d5b12c41c6fad556813',
-		'format' : 'iframe',
-		'height' : 60,
-		'width' : 468,
-		'params' : {}
-	};
-</script>
-<script type="text/javascript" src="//www.highperformanceformat.com/78677d1430cf6d5b12c41c6fad556813/invoke.js"></script>
-<hr />
-<script type="text/javascript">
-	atOptions = {
-		'key' : '4b16bc3328cfa7aaa580f4cbb5e80a45',
-		'format' : 'iframe',
-		'height' : 50,
-		'width' : 320,
-		'params' : {}
-	};
-</script>
-<script type="text/javascript" src="//www.highperformanceformat.com/4b16bc3328cfa7aaa580f4cbb5e80a45/invoke.js"></script>
-<script type='text/javascript' src='//pl16473176.profitableratecpm.com/ba/7d/74/ba7d743b7fd24a10685f7cfa5e13282d.js'></script>
-<script type='text/javascript' src='//pl16473013.profitableratecpm.com/a9/73/04/a973046e409addb0c8e5a61edb7eea9a.js'></script>
-<hr />
-<br />
-<div style="border:1px solid #ccc; background-color:#f9f9f9; padding:2px; max-width:600px; margin:10px auto; border-radius:6px;">
-  <h4 style="font-size:14px; text-align:center; margin-bottom:6px;">
-    Ad Policy
-  </h4>
-  <p style="font-size:12px; text-align:center; color:#555; line-height:1.6; margin-top:0;">
-    My blog displays third-party advertisements served through Adsterra. The ads are automatically delivered by Adsterra’s network, and I do not have the ability to select or review each one beforehand. Sometimes, ads may include sensitive or adult-oriented content, which is entirely under the responsibility of Adsterra and the respective advertisers. I sincerely apologize if any of the ads shown here cause discomfort, and I kindly ask for your understanding.
-  </p>
-</div><br /></center>
+    .play-icon::before {
+      content: '';
+      display: block;
+      width: 0;
+      height: 0;
+      border-left: 14px solid rgba(0, 0, 0, 0.8);
+      border-top: 9px solid transparent;
+      border-bottom: 9px solid transparent;
+      margin-left: 4px;
+    }
 
-
-
-
-
-
-
-	
-
-
-{% include file01.html %}
-
-	
-	
-<!--FOOTER-->
-<footer style="text-align: center; padding: 30px 20px; font-size: 16px; color: #666;">
-  <small>
-    &copy; </small>
-<span id="current-year"></span> 
- -  <a id="main-heading2" href="/" style="color: inherit; text-decoration: none;"></a>.
-  <span>   All rights reserved.</span> 
-  <script>
-    (function () {
-      const domain = window.location.hostname || "";
-      const parts = domain.split(".");
-      let brand = "Blog";
-      let rootDomain = domain;
-      // Khusus untuk .my.id
-      if (domain.endsWith(".my.id") && parts.length > 2) {
-        // Ambil nama domain utama (2 bagian sebelum .my.id)
-        const baseName = parts[parts.length - 3]; // contoh: domain / do-main
-        rootDomain = "www." + baseName + ".my.id";
-
-        // Ubah jadi Title Case dengan spasi jika ada tanda minus
-        brand = baseName
-          .split("-")
-          .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-          .join(" ");
+    @media (max-width: 600px) {
+      .gallery {
+        grid-template-columns: repeat(2, 1fr);
       }
+    }
 
-      // Update elemen
-      document.getElementById("current-year").textContent = new Date().getFullYear();
-      const headingEl = document.getElementById("main-heading2");
-      headingEl.textContent = brand;
-      headingEl.href = "https://" + rootDomain;
-    })();
-  </script>
-</footer>
-	
-	
+    @media (min-width: 601px) and (max-width: 999px) {
+      .gallery {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
 
-<br /><br /><br />
+    @media (min-width: 1000px) {
+      .gallery {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
 
-
-	
+  <div class="gallery">
+    {% for post in site.posts %}
+      {% if post.image %}
+      <a class="video-item" href="{{ post.url | relative_url }}">
+        <img src="{{ post.image | relative_url }}" alt="">
+        <div class="play-icon"></div>
+      </a>
+      {% endif %}
+    {% endfor %}
+  </div>
 
 </body>
 </html>
