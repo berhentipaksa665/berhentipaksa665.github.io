@@ -1,51 +1,75 @@
-<!-- begin post -->
-{% assign author = site.authors[post.author] %}
 
-<div class="col-lg-4 col-md-6 mb-30px card-group">
-    <div class="card h-100">
-        <div class="maxthumb">
-            <a href="{{ site.baseurl }}{{ post.url }}">
-                {% if post.image %}
+<header style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--dynamic-color);">
+  <h1 id="mainTitle" style="
+      margin:0;
+      font-size:16px;
+      color:#fff;
+      flex:1;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;"></h1>
+  <div class="nav-actions" style="margin-left:10px;flex-shrink:0;">
+    <button class="nav-button" id="menuToggle" title="Menu" aria-label="Menu" 
+            style="background:none;border:none;cursor:pointer;">
+      <!-- Hamburger Icon -->
+      <svg id="iconMenu" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" 
+           style="width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2;">
+        <path d="M3 6h18M3 12h18M3 18h18"/>
+      </svg>
+      <!-- Close Icon -->
+      <svg id="iconClose" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" 
+           style="display:none;width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2;">
+        <path d="M6 6l12 12M6 18l12-12"/>
+      </svg>
+    </button>
+  </div>
+</header>
 
-                    {% if site.lazyimages == "enabled" %}
-                        <img class="img-fluid lazyimg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAQAAAA3fa6RAAAADklEQVR42mNkAANGCAUAACMAA2w/AMgAAAAASUVORK5CYII=" data-src="{% if post.image contains "://" %}{{ post.image }}{% else %}{{ site.baseurl }}/{{ post.image }}{% endif %}" alt="{{ post.title }}">
-                    {% else %}
-                        <img class="img-fluid" src="{% if post.image contains "://" %}{{ post.image }}{% else %}{{ site.baseurl }}/{{ post.image }}{% endif %}" alt="{{ post.title }}"> 
-                    {% endif %}
+<script>
+(function(){
+  const host = window.location.hostname.split(".");
 
-                {% endif %}
-            </a>
-        </div>
-        <div class="card-body">
-            <h2 class="card-title">
-                <a class="text-dark" href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a>
-                {% if post.rating %}
-                <div class="mb-2 mt-2 font-weight-normal">
-                {% include star_rating_postbox.html %}
-                </div>
-                {% endif %}
-            </h2>
-            <h4 class="card-text">{{ post.excerpt | strip_html | truncatewords:30 }}</h4>
-        </div>
-        <div class="card-footer bg-white">
-            <div class="wrapfooter">
-                {% if post.author %}
-                <span class="meta-footer-thumb">
-                {% if author.avatar %}
-                <img class="author-thumb" src="{{site.baseurl}}/{{ author.avatar }}" alt="{{ author.display_name }}">
-                {% else %}
-                <img class="author-thumb" src="https://www.gravatar.com/avatar/{{ author.gravatar }}?s=250&d=mm&r=x" alt="{{ author.display_name }}">
-                {% endif %}
-                </span>
-                <span class="author-meta">
-                <span class="post-name"><a target="_blank" href="{{ author.web }}">{{ author.display_name }}</a></span><br/>
-                {% endif %}
-                <span class="post-date">{{ post.date | date_to_string }}</span>
-                </span>
-                <span class="post-read-more"><a href="{{ site.baseurl }}{{ post.url }}" title="Read Story"><svg class="svgIcon-use" width="25" height="25" viewbox="0 0 25 25"><path d="M19 6c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v14.66h.012c.01.103.045.204.12.285a.5.5 0 0 0 .706.03L12.5 16.85l5.662 4.126a.508.508 0 0 0 .708-.03.5.5 0 0 0 .118-.285H19V6zm-6.838 9.97L7 19.636V6c0-.55.45-1 1-1h9c.55 0 1 .45 1 1v13.637l-5.162-3.668a.49.49 0 0 0-.676 0z" fill-rule="evenodd"></path></svg></a></span>
-                <div class="clearfix"></div>
-            </div>
-        </div>
-    </div>
+  let sub = "";
+
+  if (host[0] === "www") {
+    // www.domain.my.id → ambil host[1]
+    sub = host[1];
+  } else if (host.length === 3) {
+    // domain.my.id → ambil host[0]
+    sub = host[0];
+  } else if (host.length === 4) {
+    // sub01.domain.my.id → ambil host[0]
+    sub = host[0];
+  } else {
+    // fallback, ambil bagian pertama
+    sub = host[0];
+  }
+
+  const clean = sub.replace(/-/g, " "); // ganti strip jadi spasi
+  const title = clean.replace(/\b\w/g, c => c.toUpperCase()); // kapital awal kata
+  document.getElementById("mainTitle").textContent = title;
+})();
+</script>
+
+<div id="menuPanel" style="display:none;background:#333;padding:10px;">
+  <ul style="list-style:none;margin:0;padding:0;">
+    <li><a href="/" style="color:#fff;text-decoration:none;display:block;padding:5px 0;">Home</a></li>
+    <li><a href="/contact.html" style="color:#fff;text-decoration:none;display:block;padding:5px 0;">Contact</a></li>
+    <li><a href="/privacy-policy.html" style="color:#fff;text-decoration:none;display:block;padding:5px 0;">Privacy Policy</a></li>
+    <li><a href="/terms-and-conditions.html" style="color:#fff;text-decoration:none;display:block;padding:5px 0;">Terms & Conditions</a></li>
+  </ul>
 </div>
-<!-- end post -->
+
+<script>
+  const toggleBtn = document.getElementById('menuToggle');
+  const menuPanel = document.getElementById('menuPanel');
+  const iconMenu = document.getElementById('iconMenu');
+  const iconClose = document.getElementById('iconClose');
+
+  toggleBtn.addEventListener('click', () => {
+    const isVisible = menuPanel.style.display === 'block';
+    menuPanel.style.display = isVisible ? 'none' : 'block';
+    iconMenu.style.display = isVisible ? 'inline' : 'none';
+    iconClose.style.display = isVisible ? 'none' : 'inline';
+  });
+</script>
