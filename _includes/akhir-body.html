@@ -1,0 +1,61 @@
+
+<!-- awal search -->
+<div class="widget-search" role="search">
+  <form id="customSearchForm" method="get" action="/search/">
+    <a href="/" id="homeLink" class="home-btn" aria-label="Home">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewbox="0 0 24 24" width="22" height="22">
+        <path d="M3 10.5l9-7 9 7V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1v-9.5z"/>
+      </svg>
+    </a>
+    <input 
+      id="searchInput"
+      type="text"
+      name="q"
+      placeholder="Search..."
+      autocomplete="on"/>
+    <button type="submit" class="search-btn" aria-label="Search">
+      <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" width="22" height="22" fill="currentColor">
+        <path d="M21 20l-5.8-5.8a7 7 0 10-1.4 1.4L20 21l1-1zM4 10a6 6 0 1112 0 6 6 0 01-12 0z"/>
+      </svg>
+    </button>
+  </form>
+</div>
+<!-- akhir search -->
+	
+	<!--FOOTER-->
+<footer style="text-align: center; padding: 30px 20px; font-size: 16px; color: #666;">
+  <small>
+    &copy; </small>
+<span id="current-year"></span> 
+ -  <a id="main-heading2" href="/" style="color: inherit; text-decoration: none;"></a>.
+  <span>   All rights reserved.</span> 
+  <script>
+    (function () {
+      const domain = window.location.hostname || "";
+      const parts = domain.split(".");
+      let brand = "Blog";
+      let rootDomain = domain;
+      // Khusus untuk .my.id
+      if (domain.endsWith(".my.id") && parts.length > 2) {
+        // Ambil nama domain utama (2 bagian sebelum .my.id)
+        const baseName = parts[parts.length - 3]; // contoh: domain / do-main
+        rootDomain = "www." + baseName + ".my.id";
+
+        // Ubah jadi Title Case dengan spasi jika ada tanda minus
+        brand = baseName
+          .split("-")
+          .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+          .join(" ");
+      }
+
+      // Update elemen
+      document.getElementById("current-year").textContent = new Date().getFullYear();
+      const headingEl = document.getElementById("main-heading2");
+      headingEl.textContent = brand;
+      headingEl.href = "https://" + rootDomain;
+    })();
+  </script>
+</footer>
+	
+
+  
