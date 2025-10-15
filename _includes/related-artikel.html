@@ -1,7 +1,6 @@
-
-<hr /><h3>More Video</h3>
-<section id="random-posts" class="post-grid">
-</section>
+<hr />
+<h3>More Video</h3>
+<section id="random-posts" class="post-grid"></section>
 
 <div style="text-align:center; margin:20px;">
   <button id="load-more" style="
@@ -37,10 +36,11 @@
 }
 
 .post-grid a {
+  position: relative;
   display: block;
   overflow: hidden;
   border-radius: 10px;
-  background: #f8f8f8;
+  background: #f0f0f0;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
@@ -49,10 +49,25 @@
   box-shadow: 0 3px 12px rgba(0,0,0,0.1);
 }
 
+.skeleton {
+  position: relative;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e6e6e6 37%, #f0f0f0 63%);
+  background-size: 400% 100%;
+  animation: skeleton-loading 1.4s ease infinite;
+  padding-top: 56.25%; /* 16:9 ratio */
+  border-radius: 10px;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
 .post-grid img {
+  position: absolute;
+  top: 0; left: 0;
   width: 100%;
-  height: auto;
-  display: block;
+  height: 100%;
   object-fit: cover;
   opacity: 0;
   transition: opacity 0.5s ease;
@@ -60,6 +75,23 @@
 
 .post-grid img.loaded {
   opacity: 1;
+}
+
+.play-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px;
+  height: 48px;
+  background: rgba(0,0,0,0.5);
+  clip-path: polygon(30% 20%, 30% 80%, 80% 50%);
+  pointer-events: none;
+  transition: background 0.3s ease;
+}
+
+.post-grid a:hover .play-icon {
+  background: rgba(0,0,0,0.7);
 }
 
 #load-more:hover {
@@ -70,16 +102,14 @@
 <script>
 let allPosts = [];
 let currentIndex = 0;
-const batchSize = 12; // jumlah posting per klik
+const batchSize = 12;
 const container = document.getElementById('random-posts');
 const button = document.getElementById('load-more');
 
 fetch('/posts.json')
   .then(res => res.json())
   .then(data => {
-    // Acak urutan postingan
     allPosts = data.sort(() => Math.random() - 0.5);
-    // Tampilkan batch pertama
     renderPosts();
   })
   .catch(err => {
@@ -92,30 +122,36 @@ function renderPosts() {
 
   const html = nextBatch.map(post => `
     <a href="${post.url}">
-      <img src="${post.image}" alt="${post.title}" loading="lazy">
+      <div class="skeleton"></div>
+      <img data-src="${post.image}" alt="${post.title}" loading="lazy">
+      <div class="play-icon"></div>
     </a>
   `).join('');
 
   container.insertAdjacentHTML('beforeend', html);
-  fadeInImages();
+  observeImages();
 
   currentIndex += batchSize;
-
-  // Sembunyikan tombol jika sudah habis
-  if (currentIndex >= allPosts.length) {
-    button.style.display = 'none';
-  }
+  if (currentIndex >= allPosts.length) button.style.display = 'none';
 }
 
-function fadeInImages() {
-  const imgs = container.querySelectorAll('img:not(.loaded)');
-  imgs.forEach(img => {
-    if (img.complete) {
-      img.classList.add('loaded');
-    } else {
-      img.addEventListener('load', () => img.classList.add('loaded'));
-    }
-  });
+function observeImages() {
+  const imgs = container.querySelectorAll('img[data-src]');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const img = entry.target;
+        const skeleton = img.previousElementSibling;
+        img.src = img.dataset.src;
+        img.addEventListener('load', () => {
+          img.classList.add('loaded');
+          if (skeleton) skeleton.remove();
+        });
+        observer.unobserve(img);
+      }
+    });
+  }, { rootMargin: '100px' });
+  imgs.forEach(img => observer.observe(img));
 }
 
 button.addEventListener('click', renderPosts);
