@@ -2,14 +2,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
  
 
+
 <!-- awal skript untuk atur style beda domain -->
 <script>
 (async function() {
   const host = location.hostname.toLowerCase();
+
+  // Daftar domain utama dan file CSS-nya
   const mapping = {
-    "raiska.my.id": "css-raiska.css",
-    "blogku.my.id": "css-blogku.css"
+    "raiska.my.id": "css-raiska.html",
+    "blogku.my.id": "css-blogku.html"
   };
+
+  // Fungsi untuk mencari domain utama yang cocok
   function getBaseDomain(host) {
     for (const domain in mapping) {
       if (host.endsWith(domain)) {
@@ -18,16 +23,23 @@
     }
     return null;
   }
+
+  // Deteksi domain dasar
   const baseDomain = getBaseDomain(host);
-  const file = baseDomain ? mapping[baseDomain] : "css-fallback.css";
+  const file = baseDomain ? mapping[baseDomain] : "css-fallback.html";
 
   try {
+    // Ambil file HTML berisi <style>
     const response = await fetch("/assets/css-html/" + file);
     if (!response.ok) throw new Error("Gagal memuat " + file);
     const html = await response.text();
+
+    // Buat div pembungkus
     const div = document.createElement("div");
     div.id = file.replace(".html", "");
     div.innerHTML = html;
+
+    // Sisipkan ke <head>
     document.head.appendChild(div);
   } catch (err) {
     console.error("Error memuat CSS domain:", err);
