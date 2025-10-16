@@ -1,6 +1,41 @@
 <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
- <link rel="stylesheet" href="https://adabunalima5.github.io/file/css/css008080.css"/> 
+ 
+
+<!-- awal skript untuk atur style beda domain -->
+<script>
+(async function() {
+  const host = location.hostname.toLowerCase();
+  const mapping = {
+    "raiska.my.id": "css-raiska.css",
+    "blogku.my.id": "css-blogku.css"
+  };
+  function getBaseDomain(host) {
+    for (const domain in mapping) {
+      if (host.endsWith(domain)) {
+        return domain;
+      }
+    }
+    return null;
+  }
+  const baseDomain = getBaseDomain(host);
+  const file = baseDomain ? mapping[baseDomain] : "css-fallback.css";
+
+  try {
+    const response = await fetch("/assets/css-html/" + file);
+    if (!response.ok) throw new Error("Gagal memuat " + file);
+    const html = await response.text();
+    const div = document.createElement("div");
+    div.id = file.replace(".html", "");
+    div.innerHTML = html;
+    document.head.appendChild(div);
+  } catch (err) {
+    console.error("Error memuat CSS domain:", err);
+  }
+})();
+</script>
+<!-- akhir skript untuk atur style beda domain -->
+
 
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
 <link rel="shortcut icon" href="/favicon.ico" />
