@@ -7,8 +7,59 @@ layout: null
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
- <link rel="stylesheet" href="https://adabunalima5.github.io/file/css/css008080.css"/> 
-  
+ <!-- awal skript untuk atur style beda domain -->
+<script>
+(async function() {
+  const host = location.hostname.toLowerCase();
+
+  // Daftar domain utama dan file CSS-nya
+  const mapping = {
+    "raiska.my.id": "css-raiska.html",
+    "vibedleakedloop.my.id": "css-vibedleakedloop.html",
+    "trendleakspin.my.id": "css-trendleakspin.html",
+    "trendnestclick.my.id": "css-trendnestclick.html",
+    "trailmodebuzz.my.id": "css-trailmodebuzz.html",
+    "trailburstlab.my.id": "css-trailburstlab.html",
+    "trackswayhive.my.id": "css-trackswayhive.html",
+    "webnestpulse.my.id": "css-webnestpulse.html",
+    "tiltmarklogic.my.id": "css-tiltmarklogic.html",
+    "yllaunitnoc.my.id": "css-yllaunitnoc.html"
+  };
+
+  // Fungsi untuk mencari domain utama yang cocok
+  function getBaseDomain(host) {
+    for (const domain in mapping) {
+      if (host.endsWith(domain)) {
+        return domain;
+      }
+    }
+    return null;
+  }
+
+  // Deteksi domain dasar
+  const baseDomain = getBaseDomain(host);
+  const file = baseDomain ? mapping[baseDomain] : "css-fallback.html";
+
+  try {
+    // Ambil file HTML berisi <style>
+    const response = await fetch("/assets/css-html/" + file);
+    if (!response.ok) throw new Error("Gagal memuat " + file);
+    const html = await response.text();
+
+    // Buat div pembungkus
+    const div = document.createElement("div");
+    div.id = file.replace(".html", "");
+    div.innerHTML = html;
+
+    // Sisipkan ke <head>
+    document.head.appendChild(div);
+  } catch (err) {
+    console.error("Error memuat CSS domain:", err);
+  }
+})();
+</script>
+<!-- akhir skript untuk atur style beda domain -->
+
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
 <link rel="shortcut icon" href="/favicon.ico" />
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
@@ -195,159 +246,48 @@ layout: null
 
 <main>
 	
+{% include index-main2.html %}
 
-<style>
-.gallery {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 10px;
-  width: 100%;
-  max-width: 1200px;
-}
-.video-item {
-  position: relative;
-  overflow: hidden;
-  border-radius: 8px;
-  cursor: pointer;
-  aspect-ratio: 16 / 9;
-}
-.video-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.3s ease;
-}
-.video-item:hover img {
-  transform: scale(1.05);
-  opacity: 0.9;
-}
-.play-icon {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 50px;
-  height: 50px;
-  background: rgba(255,255,255,0.7);
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.play-icon::before {
-  content: '';
-  display: block;
-  width: 0;
-  height: 0;
-  border-left: 14px solid rgba(0,0,0,0.8);
-  border-top: 9px solid transparent;
-  border-bottom: 9px solid transparent;
-  margin-left: 4px;
-}
-@media (max-width: 600px) { .gallery { grid-template-columns: repeat(2,1fr); } }
-@media (min-width: 601px) and (max-width: 999px) { .gallery { grid-template-columns: repeat(3,1fr); } }
-@media (min-width: 1000px) { .gallery { grid-template-columns: repeat(4,1fr); } }
+<!-- awal include mengambil dari folder /includes/ berdasarkan nama subdomain/domain -->
+  <div class="spo" id="dynamic-include"></div>
+  <script>
+    const host = window.location.hostname.toLowerCase();
+    const parts = host.split(".");
+    const container = document.getElementById("dynamic-include");
 
-/* pagination */
-.pagination {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin: 2rem 0;
-  flex-wrap: wrap;
-}
-.pagination a, .pagination span {
-  color: #fff;
-  background: #222;
-  border-radius: 5px;
-  padding: 8px 14px;
-  text-decoration: none;
-  font-size: 0.95rem;
-  transition: background 0.3s ease;
-}
-.pagination a:hover { background: #444; }
-.pagination .current { background: #fff; color: #000; font-weight: bold; cursor: default; }
-</style>
+    // Nama subdomain (jika ada) dan domain utama
+    let subdomain = parts.length > 2 ? parts[0].replace(/[^a-z0-9\-]/g, "") : null;
+    let domain = parts.length > 2 ? parts[1].replace(/[^a-z0-9\-]/g, "") : parts[0].replace(/[^a-z0-9\-]/g, "");
 
+    // Kandidat file sesuai aturan
+    let subFile = subdomain ? subdomain + ".html" : null;
+    let domainFile = domain + ".html";
+    let fallbackFile = "fallback.html";
 
-<div class="gallery" id="gallery"></div>
-<div class="pagination" id="pagination"></div>
+    // Fungsi untuk mencoba load file berurutan
+    function loadFile(fileList) {
+      if (fileList.length === 0) return;
 
-<script>
-// ======= CONFIG =======
-const postsPerPage = 12; // jumlah post per halaman
-// ambil semua postingan dari Jekyll
-const allPosts = [
-  {% for post in site.posts %}
-    {% if post.image %}
-      { url: "{{ post.url | relative_url }}", img: "{{ post.image | relative_url }}" },
-    {% endif %}
-  {% endfor %}
-];
-// ======= UTILS =======
-function getQueryPage() {
-  const params = new URLSearchParams(window.location.search);
-  const p = parseInt(params.get('page'));
-  return (isNaN(p) || p < 1) ? 1 : p;
-}
+      const file = fileList.shift();
+      fetch("/includes/" + file)
+        .then(r => {
+          if (!r.ok) throw new Error("not found");
+          return r.text();
+        })
+        .then(html => container.innerHTML = html)
+        .catch(() => loadFile(fileList)); // coba file berikutnya
+    }
 
-// ======= RENDER =======
-function renderGallery(page) {
-  const gallery = document.getElementById('gallery');
-  gallery.innerHTML = '';
-  const start = (page-1)*postsPerPage;
-  const end = start + postsPerPage;
-  const posts = allPosts.slice(start,end);
-  posts.forEach(p => {
-    const a = document.createElement('a');
-    a.href = p.url;
-    a.className = 'video-item';
-    a.innerHTML = `<img src="${p.img}" alt=""><div class="play-icon"></div>`;
-    gallery.appendChild(a);
-  });
-}
+    // Susun urutan fallback
+    const filesToTry = [];
+    if (subFile) filesToTry.push(subFile); // coba subdomain dulu
+    filesToTry.push(domainFile);           // lalu domain
+    filesToTry.push(fallbackFile);         // terakhir fallback
 
-function renderPagination(currentPage) {
-  const pagination = document.getElementById('pagination');
-  pagination.innerHTML = '';
-  const totalPages = Math.ceil(allPosts.length / postsPerPage);
-
-  function pageLink(page, text=currentPage==page?page:page) {
-    if(page==currentPage) return `<span class="current">${page}</span>`;
-    return `<a href="?page=${page}">${page}</a>`;
-  }
-
-  // first
-  if(currentPage>1) pagination.innerHTML += `<a href="?page=1">First</a>`;
-  else pagination.innerHTML += `<span>First</span>`;
-
-  // prev
-  if(currentPage>1) pagination.innerHTML += `<a href="?page=${currentPage-1}">&laquo; Prev</a>`;
-  else pagination.innerHTML += `<span>&laquo; Prev</span>`;
-
-  // pages (simple, max 5)
-  const delta = 2;
-  for(let i=Math.max(1,currentPage-delta); i<=Math.min(totalPages,currentPage+delta); i++){
-    pagination.innerHTML += pageLink(i);
-  }
-
-  // next
-  if(currentPage<totalPages) pagination.innerHTML += `<a href="?page=${currentPage+1}">Next &raquo;</a>`;
-  else pagination.innerHTML += `<span>Next &raquo;</span>`;
-
-  // last
-  if(currentPage<totalPages) pagination.innerHTML += `<a href="?page=${totalPages}">Last</a>`;
-  else pagination.innerHTML += `<span>Last</span>`;
-}
-
-// ======= INIT =======
-const currentPage = getQueryPage();
-renderGallery(currentPage);
-renderPagination(currentPage);
-</script>
-
-
+    // Jalankan loader
+    loadFile(filesToTry);
+  </script>
+<!-- akhir include -->
 
 </main>
 
