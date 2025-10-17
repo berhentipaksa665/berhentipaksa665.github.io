@@ -1,14 +1,14 @@
-<section class="recent-posts">      
-  <div id="recent-posts-container" class="grid"></div>      
-  <div id="pagination" class="pagination"></div>      
-</section>      
+<section class="recent-posts">          
+  <div id="recent-posts-container" class="grid"></div>          
+  <div id="pagination" class="pagination"></div>          
+</section>          
 
 <style>
 /* 🔹 Grid responsif */
 #recent-posts-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 1rem;
 }
 
 @media (min-width: 768px) {
@@ -23,244 +23,219 @@
   }
 }
 
-/* 🔹 Kartu posting */
 .post-card {
-  border-radius: 10px;
+  position: relative;
   overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  background: #fff;
-  transition: transform 0.2s ease;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  background: #000;
 }
 
-.post-card:hover {
-  transform: translateY(-3px);
+.post-card img {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: transform .3s ease;
 }
 
+.post-card:hover img {
+  transform: scale(1.05);
+}
+
+/* 🔹 Ikon play transparan */
+.post-card::after {
+  content: '▶';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  color: rgba(255,255,255,0.7);
+  text-shadow: 0 0 8px rgba(0,0,0,0.4);
+  pointer-events: none;
+}
+
+/* 🔹 Judul */
 .post-card h3 {
   font-size: 1rem;
-  margin: 8px;
+  margin: 0.5rem;
   text-align: center;
+  color: #fff;
 }
 
-.post-card a {
-  text-decoration: none;
-  color: inherit;
-}
-
-/* 🔹 Pagination */
+/* 🔹 Paginasi */
 .pagination {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 6px;
+  gap: .3rem;
   flex-wrap: wrap;
-  margin-top: 20px;
+  margin-top: 1.5rem;
 }
 
 .pagination button,
-.pagination span {
-  padding: 6px 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: #fff;
+.pagination a {
+  padding: .4rem .7rem;
+  border: 1px solid #ccc;
+  background: #f5f5f5;
   cursor: pointer;
-  font-size: 0.9rem;
+  border-radius: 4px;
+  font-size: .9rem;
+  text-decoration: none;
+  color: #333;
 }
 
-.pagination button:hover:not(:disabled) {
-  background: #f0f0f0;
-}
-
-.pagination button:disabled {
+.pagination button[disabled],
+.pagination a[disabled] {
   opacity: 0.5;
   cursor: default;
 }
+
+.pagination button.active,
+.pagination a.active {
+  background: #333;
+  color: #fff;
+  font-weight: bold;
+}
 </style>
 
-<script>
-function getCategoryCandidates(hostname) {      
-  const parts = hostname.split('.');      
-  if (parts.length < 2) return { sub: null, domain: null };      
-  const maybeDomainIndex = parts.length - 3;      
-  const domain = (maybeDomainIndex >= 0) ? parts[maybeDomainIndex] : parts[0];      
-  const subLabels = (maybeDomainIndex > 0) ? parts.slice(0, maybeDomainIndex) : [];      
-  const rawSub = subLabels.length ? subLabels.join('.') : null;      
-  const normalize = s => String(s || '').replace(/[-.]+/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();      
-  return {      
-    sub: rawSub ? normalize(rawSub) : null,      
-    domain: domain ? normalize(domain) : null      
-  };      
-}      
-
-// 🔹 Baca nomor halaman dari URL (misalnya ?page=2)
+<script>    
+function getCategoryCandidates(hostname) {          
+  const parts = hostname.split('.');          
+  if (parts.length < 2) return { sub: null, domain: null };          
+  const maybeDomainIndex = parts.length - 3;          
+  const domain = (maybeDomainIndex >= 0) ? parts[maybeDomainIndex] : parts[0];          
+  const subLabels = (maybeDomainIndex > 0) ? parts.slice(0, maybeDomainIndex) : [];          
+  const rawSub = subLabels.length ? subLabels.join('.') : null;          
+  const normalize = s => String(s || '').replace(/[-.]+/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();          
+  return { sub: rawSub ? normalize(rawSub) : null, domain: domain ? normalize(domain) : null };          
+}          
+    
+// 🔹 Baca nomor halaman dari URL (misalnya ?page1, ?page2)
 const urlParams = new URLSearchParams(window.location.search);
-const initialPage = parseInt(urlParams.get('page')) || 1;
+let pageParam = 1;
+for (const [key] of urlParams) {
+  if (key.startsWith('page')) {
+    pageParam = parseInt(key.replace('page', '')) || 1;
+    break;
+  }
+}
+const initialPage = pageParam;
 
-const { sub: subCategory, domain: domainCategory } = getCategoryCandidates(window.location.hostname);      
-const POSTS_PER_PAGE = 6;      
-let currentPage = initialPage;      
-let filteredPosts = [];      
-
-fetch('/posts.json')      
-  .then(res => {      
-    if (!res.ok) throw new Error('Failed to load posts.json');      
-    return res.json();      
-  })      
-  .then(posts => {      
-    const normalize = s => String(s || '').replace(/[-.]+/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();      
-    if (!Array.isArray(posts) || posts.length === 0) {      
-      return renderNoPosts();      
-    }      
-
-    // 1️⃣ coba filter berdasarkan subdomain lebih dulu
-    if (subCategory) {      
-      filteredPosts = posts.filter(p =>      
-        Array.isArray(p.categories) &&      
-        p.categories.some(c => normalize(c) === subCategory)      
-      );      
-    }      
-
-    // 2️⃣ jika kosong, fallback ke kategori domain
-    if (filteredPosts.length === 0 && domainCategory) {      
-      filteredPosts = posts.filter(p =>      
-        Array.isArray(p.categories) &&      
-        p.categories.some(c => normalize(c) === domainCategory)      
-      );      
-    }      
-
-    // 3️⃣ jika tetap kosong, fallback ke semua postingan
-    if (filteredPosts.length === 0) {      
-      filteredPosts = posts;      
-    }      
-
-    // urutkan berdasarkan tanggal terbaru
-    filteredPosts.sort((a, b) => new Date(b.date) - new Date(a.date));      
-
-    renderPosts();      
-  })      
-  .catch(err => {      
-    console.error('Error loading posts:', err);      
-    renderNoPosts();      
-  });      
-
-function renderPosts() {      
-  const container = document.getElementById('recent-posts-container');      
-  const pagination = document.getElementById('pagination');      
-  container.innerHTML = '';      
-  pagination.innerHTML = '';      
-
-  const start = (currentPage - 1) * POSTS_PER_PAGE;      
-  const end = start + POSTS_PER_PAGE;      
-  const pagePosts = filteredPosts.slice(start, end);      
-
-  pagePosts.forEach(post => {      
-    const card = document.createElement('div');      
-    card.className = 'post-card';      
-
-    const linkImg = document.createElement('a');      
-    linkImg.href = post.url || '#';      
-    const img = document.createElement('img');      
-    img.loading = 'lazy';      
-    img.alt = post.title || '';      
-    img.style.width = '100%';      
-    img.style.height = 'auto';      
-    img.src = post.image || '/assets/default-thumb.jpg';      
-    linkImg.appendChild(img);      
-    card.appendChild(linkImg);      
-
-    const h3 = document.createElement('h3');      
-    const linkTitle = document.createElement('a');      
-    linkTitle.href = post.url || '#';      
-    linkTitle.textContent = post.title || '(no title)';      
-    h3.appendChild(linkTitle);      
-    card.appendChild(h3);      
-
-    container.appendChild(card);      
-  });      
-
-  const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);      
-
-  if (totalPages > 1) {      
-    const firstBtn = document.createElement('button');
-    firstBtn.textContent = 'First';
-    firstBtn.disabled = currentPage === 1;
-    firstBtn.onclick = () => changePage(1);
-    pagination.appendChild(firstBtn);
-
-    const prevBtn = document.createElement('button');      
-    prevBtn.textContent = 'Prev';      
-    prevBtn.disabled = currentPage === 1;      
-    prevBtn.onclick = () => changePage(currentPage - 1);      
-    pagination.appendChild(prevBtn);      
-
-    const maxVisible = 5;      
-    let startPage = Math.max(1, currentPage - 2);      
-    let endPage = Math.min(totalPages, currentPage + 2);      
-
-    if (currentPage <= 3) {      
-      endPage = Math.min(totalPages, maxVisible);      
-    } else if (currentPage >= totalPages - 2) {      
-      startPage = Math.max(1, totalPages - maxVisible + 1);      
-    }      
-
-    if (startPage > 1) {      
-      addPageButton(1);      
-      if (startPage > 2) addEllipsis();      
-    }      
-
-    for (let i = startPage; i <= endPage; i++) addPageButton(i);      
-
-    if (endPage < totalPages) {      
-      if (endPage < totalPages - 1) addEllipsis();      
-      addPageButton(totalPages);      
-    }      
-
-    const nextBtn = document.createElement('button');      
-    nextBtn.textContent = 'Next';      
-    nextBtn.disabled = currentPage === totalPages;      
-    nextBtn.onclick = () => changePage(currentPage + 1);      
-    pagination.appendChild(nextBtn);      
-
-    const lastBtn = document.createElement('button');
-    lastBtn.textContent = 'Last';
-    lastBtn.disabled = currentPage === totalPages;
-    lastBtn.onclick = () => changePage(totalPages);
-    pagination.appendChild(lastBtn);
-  }      
-}      
-
-function changePage(page) {
-  currentPage = page;
-  renderPosts();
-
-  // 🔹 Update URL (SEO-friendly, tanpa reload)
-  const newUrl = `${window.location.pathname}?page=${String(page).padStart(2, '0')}`;
-  history.pushState({}, '', newUrl);
+const { sub: subCategory, domain: domainCategory } = getCategoryCandidates(window.location.hostname);          
+const POSTS_PER_PAGE = 6;          
+let currentPage = initialPage;          
+let filteredPosts = [];          
+    
+fetch('/posts.json')          
+  .then(res => {          
+    if (!res.ok) throw new Error('Failed to load posts.json');          
+    return res.json();          
+  })          
+  .then(posts => {          
+    const normalize = s => String(s || '').replace(/[-.]+/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();          
+    if (!Array.isArray(posts) || posts.length === 0) return renderNoPosts();          
+    
+    if (subCategory) {          
+      filteredPosts = posts.filter(p => Array.isArray(p.categories) && p.categories.some(c => normalize(c) === subCategory));          
+    }          
+    if (filteredPosts.length === 0 && domainCategory) {          
+      filteredPosts = posts.filter(p => Array.isArray(p.categories) && p.categories.some(c => normalize(c) === domainCategory));          
+    }          
+    if (filteredPosts.length === 0) { filteredPosts = posts; }          
+    
+    filteredPosts.sort((a, b) => new Date(b.date) - new Date(a.date));          
+    renderPosts();          
+  })          
+  .catch(err => { console.error('Error loading posts:', err); renderNoPosts(); });          
+    
+function renderPosts() {          
+  const container = document.getElementById('recent-posts-container');          
+  const pagination = document.getElementById('pagination');          
+  container.innerHTML = '';          
+  pagination.innerHTML = '';          
+    
+  const start = (currentPage - 1) * POSTS_PER_PAGE;          
+  const end = start + POSTS_PER_PAGE;          
+  const pagePosts = filteredPosts.slice(start, end);          
+    
+  pagePosts.forEach(post => {          
+    const card = document.createElement('div');          
+    card.className = 'post-card';          
+    const linkImg = document.createElement('a');          
+    linkImg.href = post.url || '#';          
+    const img = document.createElement('img');          
+    img.loading = 'lazy';          
+    img.alt = post.title || '';          
+    img.src = post.image || '/assets/default-thumb.jpg';          
+    linkImg.appendChild(img);          
+    card.appendChild(linkImg);          
+    const h3 = document.createElement('h3');          
+    const linkTitle = document.createElement('a');          
+    linkTitle.href = post.url || '#';          
+    linkTitle.textContent = post.title || '(no title)';          
+    h3.appendChild(linkTitle);          
+    card.appendChild(h3);          
+    container.appendChild(card);          
+  });          
+    
+  const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);          
+  if (totalPages > 1) {          
+    addNavButton('First', 1, currentPage === 1);
+    addNavButton('Prev', currentPage - 1, currentPage === 1);
+    
+    const maxVisible = 5;          
+    let startPage = Math.max(1, currentPage - 2);          
+    let endPage = Math.min(totalPages, currentPage + 2);          
+    if (currentPage <= 3) endPage = Math.min(totalPages, maxVisible);          
+    else if (currentPage >= totalPages - 2) startPage = Math.max(1, totalPages - maxVisible + 1);          
+    
+    if (startPage > 1) { addPageButton(1); if (startPage > 2) addEllipsis(); }          
+    for (let i = startPage; i <= endPage; i++) addPageButton(i);          
+    if (endPage < totalPages) { if (endPage < totalPages - 1) addEllipsis(); addPageButton(totalPages); }          
+    
+    addNavButton('Next', currentPage + 1, currentPage === totalPages);
+    addNavButton('Last', totalPages, currentPage === totalPages);
+  }          
+}          
+    
+function addNavButton(text, page, disabled) {
+  const pagination = document.getElementById('pagination');
+  const link = document.createElement('a');
+  link.textContent = text;
+  if (disabled) link.setAttribute('disabled', true);
+  else link.href = `/?page${page}`;
+  if (!disabled) link.onclick = e => { e.preventDefault(); changePage(page); };
+  pagination.appendChild(link);
 }
 
-function addPageButton(page) {      
-  const pagination = document.getElementById('pagination');      
-  const pageBtn = document.createElement('button');      
-  pageBtn.textContent = page;      
-  if (page === currentPage) {      
-    pageBtn.disabled = true;      
-    pageBtn.style.fontWeight = 'bold';      
-  }      
-  pageBtn.onclick = () => changePage(page);      
-  pagination.appendChild(pageBtn);      
-}      
-
-function addEllipsis() {      
-  const pagination = document.getElementById('pagination');      
-  const span = document.createElement('span');      
-  span.textContent = '…';      
-  pagination.appendChild(span);      
-}      
-
-function renderNoPosts() {      
-  const container = document.getElementById('recent-posts-container');      
-  const pagination = document.getElementById('pagination');      
-  container.innerHTML = '<p>No posts found.</p>';      
-  pagination.innerHTML = '';      
-}      
+function changePage(page) {    
+  currentPage = page;    
+  renderPosts();    
+  const newUrl = `${window.location.pathname}?page${String(page).padStart(1, '0')}`;    
+  history.pushState({}, '', newUrl);    
+}    
+    
+function addPageButton(page) {          
+  const pagination = document.getElementById('pagination');          
+  const link = document.createElement('a');          
+  link.textContent = page;          
+  link.href = `/?page${page}`;          
+  if (page === currentPage) link.classList.add('active');          
+  link.onclick = e => { e.preventDefault(); changePage(page); };          
+  pagination.appendChild(link);          
+}          
+    
+function addEllipsis() {          
+  const pagination = document.getElementById('pagination');          
+  const span = document.createElement('span');          
+  span.textContent = '…';          
+  pagination.appendChild(span);          
+}          
+    
+function renderNoPosts() {          
+  document.getElementById('recent-posts-container').innerHTML = '<p>No posts found.</p>';          
+  document.getElementById('pagination').innerHTML = '';          
+}          
 </script>
+
