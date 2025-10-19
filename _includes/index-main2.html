@@ -60,18 +60,6 @@
   pointer-events: none;
 }
 
-/* 🔹 Judul */
-.post-card h3 {
-  font-size: 1rem;
-  text-align: center;
-  margin: 0.6rem 0;
-  color: #fff;
-}
-.post-card h3 a {
-  text-decoration: none;
-  color: #fff;
-}
-
 /* 🔹 Pagination */
 .pagination {
   display: flex;
@@ -189,13 +177,6 @@ function renderPosts() {
     img.src = post.image || '/assets/default-thumb.jpg';            
     linkImg.appendChild(img);            
     card.appendChild(linkImg);            
-
-    const h3 = document.createElement('h3');            
-    const linkTitle = document.createElement('a');            
-    linkTitle.href = post.url || '#';            
-    linkTitle.textContent = post.title || '(no title)';            
-    h3.appendChild(linkTitle);            
-    card.appendChild(h3);            
 
     container.appendChild(card);            
   });            
