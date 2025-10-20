@@ -1,0 +1,103 @@
+<style>
+.masonryuGallery2-container {
+  column-count: 3;
+  column-gap: 0;
+}
+@media (min-width: 600px) {
+  .masonryuGallery2-container { column-count: 4; }
+}
+@media (min-width: 1000px) {
+  .masonryuGallery2-container { column-count: 4; }
+}
+.masonryuGallery2-container .masonryu-item {
+  break-inside: avoid;
+  margin: 0;
+  padding: 0;
+}
+.masonryuGallery2-container a { display: block; width: 100%; }
+.masonryuGallery2-container img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+.masonryuGallery2-container a:hover img {
+  filter: brightness(0.85);
+  transform: scale(1.02);
+}
+#loadMoreBtn {
+  display: block;
+  margin: 1.5rem auto;
+  padding: 0.7rem 1.5rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #222;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+#loadMoreBtn:hover {
+  background-color: #555;
+}
+</style>
+
+<div class="masonryuGallery2-container" id="masonryuGallery2-feed"></div>
+<button id="loadMoreBtn" style="display:none;">Load More</button>
+
+<script>
+let entries = [];
+let currentIndex = 0;
+const perPage = 30; // jumlah gambar per batch
+
+function showFeed(json) {
+  entries = json.feed.entry || [];
+  if (entries.length === 0) return;
+
+  // acak urutan entri
+  for (let i = entries.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [entries[i], entries[j]] = [entries[j], entries[i]];
+  }
+
+  document.getElementById("loadMoreBtn").style.display = "block";
+  renderBatch();
+}
+
+function renderBatch() {
+  const container = document.getElementById("masonryuGallery2-feed");
+  const batch = entries.slice(currentIndex, currentIndex + perPage);
+  currentIndex += perPage;
+
+  batch.forEach(entry => {
+    const url = entry.link.find(l => l.rel === "alternate").href;
+    const title = entry.title.$t;
+    const content = entry.content?.$t || '';
+    const imgMatch = content.match(/<img[^>]+src="([^">]+)"/);
+    const img = imgMatch ? imgMatch[1] : "https://via.placeholder.com/300x200?text=No+Image";
+
+    const div = document.createElement("div");
+    div.className = "masonryu-item";
+    div.innerHTML = `
+      <a href="${url}" title="${title}">
+        <img src="${img}" alt="${title}" loading="lazy">
+      </a>
+    `;
+    container.appendChild(div);
+  });
+
+  // sembunyikan tombol jika sudah habis
+  if (currentIndex >= entries.length) {
+    document.getElementById("loadMoreBtn").style.display = "none";
+  }
+}
+
+// tombol load more
+document.getElementById("loadMoreBtn").addEventListener("click", renderBatch);
+
+// load feed JSONP
+const script = document.createElement('script');
+script.src = 'https://www.raiska.my.id/feeds/posts/default?alt=json-in-script&callback=showFeed&max-results=9999';
+document.body.appendChild(script);
+</script>
