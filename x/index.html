@@ -107,7 +107,7 @@ layout: null
 <script>
 let allPosts = [];
 let currentIndex = 0;
-const batchSize = 12;
+const batchSize = 20;
 const container = document.getElementById('random-posts');
 const button = document.getElementById('load-more');
 
@@ -173,83 +173,6 @@ function lazyLoadImages() {
 button.addEventListener('click', renderPosts);
 </script>
 
-<!-- awal photo gallery -->
-<hr />
-<h3>Photo Artis Seksi</h3>
-<style>
-.masonryuGallery2-container {
-  column-count: 3;
-  column-gap: 0;
-}
-@media (min-width: 600px) {
-  .masonryuGallery2-container { column-count: 4; }
-}
-@media (min-width: 1000px) {
-  .masonryuGallery2-container { column-count: 4; }
-}
-.masonryuGallery2-container .masonryu-item {
-  break-inside: avoid;
-  margin: 0;
-  padding: 0;
-}
-.masonryuGallery2-container a { display: block; width: 100%; }
-.masonryuGallery2-container img {
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: cover;
-}
-</style>
-
-<div class="masonryuGallery2-container" id="masonryuGallery2-feed"></div>
-
-<script>
-function showFeed(json) {
-  const entries = json.feed.entry || [];
-  if (entries.length === 0) return;
-
-  function shuffle(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-  }
-
-  shuffle(entries);
-  const container = document.getElementById("masonryuGallery2-feed");
-
-  function getPostUrl(entry) {
-    return entry.link.find(l => l.rel === "alternate").href;
-  }
-
-  function extractImage(entry) {
-    const content = entry.content?.$t || '';
-    const imgMatch = content.match(/<img[^>]+src="([^">]+)"/);
-    return imgMatch ? imgMatch[1] : "https://via.placeholder.com/300x200?text=No+Image";
-  }
-
-  let html = '';
-  entries.slice(0, 1000).forEach(entry => {
-    const img = extractImage(entry);
-    const url = getPostUrl(entry);
-    const title = entry.title.$t;
-    html += `
-      <div class="masonryu-item">
-        <a href="${url}" title="${title}">
-          <img src="${img}" alt="${title}">
-        </a>
-      </div>`;
-  });
-
-  container.innerHTML = html;
-}
-
-// JSONP version: Blogger feed + callback
-document.write('<script src="https://www.raiska.my.id/feeds/posts/default?alt=json-in-script&callback=showFeed&max-results=9999"></' + 'script>');
-</script>
-<!-- akhir photo gallery -->
-	<br />
-
 
 
 
@@ -257,7 +180,7 @@ document.write('<script src="https://www.raiska.my.id/feeds/posts/default?alt=js
 
 
 <!-- ads by infotainmentsementara.blogspot.com -->
-<br /><script type='text/javascript' src='//pl16770411.revenuecpmgate.com/ba/2b/54/ba2b546b363dc2c15e5a6579135270ad.js'></script><script type='text/javascript' src='//pl26322456.revenuecpmgate.com/2c/14/eb/2c14eb4077aa50d9f7517a0e55b5bb4c.js'></script><script type="text/javascript">
+<br /><script type="text/javascript">
 	atOptions = {
 		'key' : 'c0f2ae7864bf89882b6415a63a352aca',
 		'format' : 'iframe',
@@ -323,60 +246,5 @@ document.write('<script src="https://www.raiska.my.id/feeds/posts/default?alt=js
 	<br />
 	
 	
-	<style>
-.spo {
-  position: fixed;
-  top: 0;
-  left: 100%;
-  width: 100vw;
-  height: 100vh;
-  background: #00000f;
-  overflow-y: auto;
-  z-index: 9999;
-  padding: 10px;
-  box-sizing: border-box;
-}
-	</style>
-<hr />
-<!-- awal include mengambil dari folder /includes/ berdasarkan nama subdomain/domain -->
-  <div class="spo" id="dynamic-include"></div>
-  <script>
-    const host = window.location.hostname.toLowerCase();
-    const parts = host.split(".");
-    const container = document.getElementById("dynamic-include");
-
-    // Nama subdomain (jika ada) dan domain utama
-    let subdomain = parts.length > 2 ? parts[0].replace(/[^a-z0-9\-]/g, "") : null;
-    let domain = parts.length > 2 ? parts[1].replace(/[^a-z0-9\-]/g, "") : parts[0].replace(/[^a-z0-9\-]/g, "");
-
-    // Kandidat file sesuai aturan
-    let subFile = subdomain ? subdomain + ".html" : null;
-    let domainFile = domain + ".html";
-    let fallbackFile = "fallback.html";
-
-    // Fungsi untuk mencoba load file berurutan
-    function loadFile(fileList) {
-      if (fileList.length === 0) return;
-
-      const file = fileList.shift();
-      fetch("/includes/" + file)
-        .then(r => {
-          if (!r.ok) throw new Error("not found");
-          return r.text();
-        })
-        .then(html => container.innerHTML = html)
-        .catch(() => loadFile(fileList)); // coba file berikutnya
-    }
-
-    // Susun urutan fallback
-    const filesToTry = [];
-    if (subFile) filesToTry.push(subFile); // coba subdomain dulu
-    filesToTry.push(domainFile);           // lalu domain
-    filesToTry.push(fallbackFile);         // terakhir fallback
-
-    // Jalankan loader
-    loadFile(filesToTry);
-  </script>
-<!-- akhir include -->
-
+	
 
