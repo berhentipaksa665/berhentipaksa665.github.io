@@ -1,48 +1,60 @@
 ---
 layout: null
 ---
-
  <!DOCTYPE html><html lang="en"><head>{% include head-artikel.html %}	{% include verif.html %}	{% include head.html %}</head>
 <body>{% include awal-body.html %}<main><br /><br /><center>
 	<!-- awal include mengambil dari folder /includes/ berdasarkan nama subdomain/domain -->
   <div class="spo" id="dynamic-include"></div>
-  <script>
-    const host = window.location.hostname.toLowerCase();
-    const parts = host.split(".");
-    const container = document.getElementById("dynamic-include");
+<script>
+  const container = document.getElementById("dynamic-include");
+  container.innerHTML = "<p>Loading...</p>";
 
-    // Nama subdomain (jika ada) dan domain utama
-    let subdomain = parts.length > 2 ? parts[0].replace(/[^a-z0-9\-]/g, "") : null;
-    let domain = parts.length > 2 ? parts[1].replace(/[^a-z0-9\-]/g, "") : parts[0].replace(/[^a-z0-9\-]/g, "");
+  const host = window.location.hostname.toLowerCase();
+  const parts = host.split(".");
+  const tldTwoLevel = ["my.id", "co.id", "or.id", "ac.id", "web.id", "biz.id", "sch.id"];
+  const lastTwo = parts.slice(-2).join(".");
+  const lastThree = parts.slice(-3).join(".");
 
-    // Kandidat file sesuai aturan
-    let subFile = subdomain ? subdomain + ".html" : null;
-    let domainFile = domain + ".html";
-    let fallbackFile = "fallback.html";
+  let domain, subdomain;
 
-    // Fungsi untuk mencoba load file berurutan
-    function loadFile(fileList) {
-      if (fileList.length === 0) return;
+  if (tldTwoLevel.some(tld => lastThree.endsWith(tld))) {
+    domain = parts.length > 3 ? parts[parts.length - 3] : parts[0];
+    subdomain = parts.length > 3 ? parts.slice(0, parts.length - 3).join("-") : null;
+  } else {
+    domain = parts.length > 2 ? parts[parts.length - 2] : parts[0];
+    subdomain = parts.length > 2 ? parts.slice(0, parts.length - 2).join("-") : null;
+  }
 
-      const file = fileList.shift();
-      fetch("/includes/" + file)
-        .then(r => {
-          if (!r.ok) throw new Error("not found");
-          return r.text();
-        })
-        .then(html => container.innerHTML = html)
-        .catch(() => loadFile(fileList)); // coba file berikutnya
+  domain = domain.replace(/[^a-z0-9\-]/g, "");
+  subdomain = subdomain ? subdomain.replace(/[^a-z0-9\-]/g, "") : null;
+
+  const subFile = subdomain ? subdomain + ".html" : null;
+  const domainFile = domain + ".html";
+  const fallbackFile = "fallback.html";
+
+  function loadFile(fileList) {
+    if (fileList.length === 0) {
+      container.innerHTML = "<p>Content not available.</p>";
+      return;
     }
 
-    // Susun urutan fallback
-    const filesToTry = [];
-    if (subFile) filesToTry.push(subFile); // coba subdomain dulu
-    filesToTry.push(domainFile);           // lalu domain
-    filesToTry.push(fallbackFile);         // terakhir fallback
+    const file = fileList.shift();
+    fetch("/includes/" + file)
+      .then(r => {
+        if (!r.ok) throw new Error("not found");
+        return r.text();
+      })
+      .then(html => container.innerHTML = html)
+      .catch(() => loadFile(fileList));
+  }
 
-    // Jalankan loader
-    loadFile(filesToTry);
-  </script>
+  const filesToTry = [];
+  if (subFile) filesToTry.push(subFile);
+  filesToTry.push(domainFile);
+  filesToTry.push(fallbackFile);
+
+  loadFile(filesToTry);
+</script>
 <!-- akhir include -->
 
 <section id="random-posts" class="post-grid"></section>
