@@ -5,74 +5,43 @@ layout: null
 <body>{% include awal-body.html %}<main><br /><br /><center>
 	<!-- awal include mengambil dari folder /includes/ berdasarkan nama subdomain/domain -->
   <div class="spo" id="dynamic-include"></div>
-<script>
-  const container = document.getElementById("dynamic-include");
-  container.innerHTML = "<p>Loading...</p>";
+  <script>
+    const host = window.location.hostname.toLowerCase();
+    const parts = host.split(".");
+    const container = document.getElementById("dynamic-include");
 
-  const host = window.location.hostname.toLowerCase();
-  const parts = host.split(".");
-  const tldTwoLevel = ["my.id", "co.id", "or.id", "ac.id", "web.id", "biz.id", "sch.id"];
-  const lastThree = parts.slice(-3).join(".");
-  const lastTwo = parts.slice(-2).join(".");
+    // Nama subdomain (jika ada) dan domain utama
+    let subdomain = parts.length > 2 ? parts[0].replace(/[^a-z0-9\-]/g, "") : null;
+    let domain = parts.length > 2 ? parts[1].replace(/[^a-z0-9\-]/g, "") : parts[0].replace(/[^a-z0-9\-]/g, "");
 
-  let domain, subdomain;
+    // Kandidat file sesuai aturan
+    let subFile = subdomain ? subdomain + ".html" : null;
+    let domainFile = domain + ".html";
+    let fallbackFile = "fallback.html";
 
-  if (tldTwoLevel.some(tld => lastThree.endsWith(tld))) {
-    domain = parts[parts.length - 3];
-    subdomain = parts.length > 3 ? parts.slice(0, parts.length - 3).join("-") : null;
-  } else {
-    domain = parts[parts.length - 2];
-    subdomain = parts.length > 2 ? parts.slice(0, parts.length - 2).join("-") : null;
-  }
+    // Fungsi untuk mencoba load file berurutan
+    function loadFile(fileList) {
+      if (fileList.length === 0) return;
 
-  domain = domain.replace(/[^a-z0-9\-]/g, "");
-  subdomain = subdomain ? subdomain.replace(/[^a-z0-9\-]/g, "") : null;
-
-  const subFile = subdomain ? subdomain + ".html" : null;
-  const domainFile = domain + ".html";
-  const fallbackFile = "fallback.html";
-
-  async function tryFetch(path) {
-    try {
-      const r = await fetch(path);
-      if (!r.ok) throw new Error("not found");
-      return await r.text();
-    } catch (err) {
-      return null;
-    }
-  }
-
-  async function loadFile(fileList) {
-    if (fileList.length === 0) {
-      container.innerHTML = "<p>Content not available.</p>";
-      return;
+      const file = fileList.shift();
+      fetch("/includes/" + file)
+        .then(r => {
+          if (!r.ok) throw new Error("not found");
+          return r.text();
+        })
+        .then(html => container.innerHTML = html)
+        .catch(() => loadFile(fileList)); // coba file berikutnya
     }
 
-    const file = fileList.shift();
-    let html = null;
+    // Susun urutan fallback
+    const filesToTry = [];
+    if (subFile) filesToTry.push(subFile); // coba subdomain dulu
+    filesToTry.push(domainFile);           // lalu domain
+    filesToTry.push(fallbackFile);         // terakhir fallback
 
-    // Coba versi .html
-    html = await tryFetch("./includes/" + file);
-    // Kalau gagal, coba versi Jekyll (folder/index.html)
-    if (!html && file.endsWith(".html")) {
-      const folderName = file.replace(".html", "");
-      html = await tryFetch("./includes/" + folderName + "/index.html");
-    }
-
-    if (html) {
-      container.innerHTML = html;
-    } else {
-      loadFile(fileList);
-    }
-  }
-
-  const filesToTry = [];
-  if (subFile) filesToTry.push(subFile);
-  filesToTry.push(domainFile);
-  filesToTry.push(fallbackFile);
-
-  loadFile(filesToTry);
-</script>
+    // Jalankan loader
+    loadFile(filesToTry);
+  </script>
 <!-- akhir include -->
 
 <section id="random-posts" class="post-grid"></section>
