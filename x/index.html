@@ -12,16 +12,16 @@ layout: null
   const host = window.location.hostname.toLowerCase();
   const parts = host.split(".");
   const tldTwoLevel = ["my.id", "co.id", "or.id", "ac.id", "web.id", "biz.id", "sch.id"];
-  const lastTwo = parts.slice(-2).join(".");
   const lastThree = parts.slice(-3).join(".");
+  const lastTwo = parts.slice(-2).join(".");
 
   let domain, subdomain;
 
   if (tldTwoLevel.some(tld => lastThree.endsWith(tld))) {
-    domain = parts.length > 3 ? parts[parts.length - 3] : parts[0];
+    domain = parts[parts.length - 3];
     subdomain = parts.length > 3 ? parts.slice(0, parts.length - 3).join("-") : null;
   } else {
-    domain = parts.length > 2 ? parts[parts.length - 2] : parts[0];
+    domain = parts[parts.length - 2];
     subdomain = parts.length > 2 ? parts.slice(0, parts.length - 2).join("-") : null;
   }
 
@@ -32,20 +32,38 @@ layout: null
   const domainFile = domain + ".html";
   const fallbackFile = "fallback.html";
 
-  function loadFile(fileList) {
+  async function tryFetch(path) {
+    try {
+      const r = await fetch(path);
+      if (!r.ok) throw new Error("not found");
+      return await r.text();
+    } catch (err) {
+      return null;
+    }
+  }
+
+  async function loadFile(fileList) {
     if (fileList.length === 0) {
       container.innerHTML = "<p>Content not available.</p>";
       return;
     }
 
     const file = fileList.shift();
-    fetch("/includes/" + file)
-      .then(r => {
-        if (!r.ok) throw new Error("not found");
-        return r.text();
-      })
-      .then(html => container.innerHTML = html)
-      .catch(() => loadFile(fileList));
+    let html = null;
+
+    // Coba versi .html
+    html = await tryFetch("./includes/" + file);
+    // Kalau gagal, coba versi Jekyll (folder/index.html)
+    if (!html && file.endsWith(".html")) {
+      const folderName = file.replace(".html", "");
+      html = await tryFetch("./includes/" + folderName + "/index.html");
+    }
+
+    if (html) {
+      container.innerHTML = html;
+    } else {
+      loadFile(fileList);
+    }
   }
 
   const filesToTry = [];
