@@ -1,1 +1,157 @@
+---
+layout: null
+permalink: /x/1
+---
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Video Archive</title>
+
+<link rel="stylesheet" href="https://adabunalima5.github.io/file/css/css008080.css">
+
+<style>
+/* WRAPPER */
+.wrapper {
+  max-width: 900px;
+  margin: auto;
+  padding: 10px;
+  font-family: Arial, sans-serif;
+}
+
+/* HEADER */
+h2 {
+  font-size: 20px;
+  margin-bottom: 15px;
+  color: #004d4d;
+}
+
+/* FOLDER BLOCK */
+.folder-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 0 8px;
+  font-size: 17px;
+  color: #004d4d;
+  font-weight: bold;
+}
+
+/* MATERIAL ICON STYLE SVG */
+.folder-icon {
+  width: 26px;
+  height: 26px;
+  fill: #008080;
+}
+
+.file-icon {
+  width: 24px;
+  height: 24px;
+  fill: #007777;
+  flex-shrink: 0;
+}
+
+/* FILE ITEM (ANDROID STYLE) */
+.file-item {
+  display: flex;
+  padding: 10px;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #cce7e7;
+  margin-bottom: 8px;
+  align-items: flex-start;
+  gap: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+/* MULTI-LINE TITLE FIX FULL */
+.file-title {
+  display: block;                     
+  font-size: 15px;
+  line-height: 1.35;
+  white-space: normal !important;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 100% !important;
+  color: #005555;
+  text-decoration: none;
+}
+
+/* FILE COLUMN RIGHT (TITLE AREA) */
+.file-meta {
+  flex: 1;
+}
+
+/* PAGINATION */
+.pagination {
+  margin-top: 20px;
+  text-align: center;
+}
+.pagination a {
+  padding: 6px 12px;
+  border: 1px solid #008080;
+  border-radius: 5px;
+  background: #e0ffff;
+  color: #006666;
+  text-decoration: none;
+  margin: 3px;
+}
+</style>
+</head>
+
+<body>
+<div class="wrapper">
+
+<h2>Video Archive</h2>
+
+{% assign posts = site.posts %}
+{% assign per_page = 20 %}
+{% assign page_num = 1 %}
+{% assign offset = per_page | times: page_num | minus: per_page %}
+{% assign current_posts = posts | slice: offset, per_page %}
+
+{% assign grouped = current_posts | group_by_exp:"post", "post.date | date: '%m/%d'" %}
+
+{% for month in grouped %}
+
+<div class="folder-header">
+  <svg class="folder-icon" viewBox="0 0 24 24">
+    <path d="M10 4H2v16h20V6H12l-2-2z"/>
+  </svg>
+  {{ month.name }}
+</div>
+
+{% assign counter = 0 %}
+
+{% for post in month.items %}
+  {% assign counter = counter | plus: 1 %}
+  {% assign num = counter | prepend: "00" | slice: -2, 2 %}
+  {% assign cleaned_title = post.title | replace: "-", " " %}
+  {% assign filename = "video " | append: num | append: " " | append: cleaned_title | append: ".mp4" %}
+
+<div class="file-item">
+
+  <svg class="file-icon" viewBox="0 0 24 24">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16l6-3 6 3V8l-4-6z"/>
+  </svg>
+
+  <div class="file-meta">
+    <a href="{{ post.url | relative_url }}" class="file-title">
+      {{ filename }}
+    </a>
+  </div>
+
+</div>
+
+{% endfor %}
+{% endfor %}
+
+<div class="pagination">
+  <a href="/x/1?page01">Page 01</a>
+  <a href="/x/1?page02">Page 02</a>
+</div>
+
+</div>
+</body>
+</html>
