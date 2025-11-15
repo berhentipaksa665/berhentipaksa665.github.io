@@ -1,152 +1,163 @@
 ---
 layout: null
-permalink: /x/1
+permalink: /x/1/
 ---
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Video Drive View</title>
+<title>Archive Video</title>
 
-<link rel="stylesheet" href="https://adabunalima5.github.io/file/css/css008080.css">
+<link rel="stylesheet" href="/file/css/css008080.css">
 
 <style>
-.wrapper {
-  max-width: 1000px;
-  margin: auto;
-  padding: 15px;
+/* ===== compact + cocok style bawaan ===== */
+
+.archive-wrap {
+  margin-top: 10px;
+  padding: 0 5px;
 }
 
-/* === FOLDER TITLE (MONTH) === */
-.folder-title {
+.month-box {
+  border: 1px solid #d0d7de;
+  border-left: 4px solid var(--dynamic-color);
+  border-radius: 6px;
+  margin-bottom: 18px;
+  background: #ffffff;
+  padding: 10px;
+}
+
+.month-title {
   display: flex;
   align-items: center;
-  font-size: 20px;
-  margin: 20px 0 10px 0;
-  font-weight: bold;
-  color: #333;
-}
-
-.folder-title svg {
-  width: 26px;
-  margin-right: 8px;
-  fill: #f4b400; /* Google Drive yellow folder */
-}
-
-/* === DRIVE GRID === */
-.drive-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 15px;
-}
-
-/* === DRIVE FILE CARD === */
-.drive-item {
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 12px;
-  text-align: center;
-  border: 1px solid #e0e0e0;
-  transition: 0.15s;
-}
-
-.drive-item:hover {
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-  transform: translateY(-3px);
-}
-
-/* === FILE ICON (SVG) === */
-.drive-item svg {
-  width: 40px;
-  height: 40px;
-  fill: #4285f4; /* Google blue */
+  gap: 8px;
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--dynamic-color);
   margin-bottom: 10px;
 }
 
-/* === FILE TITLE MULTILINE === */
-.file-title {
-  display: block;
+.day-box {
+  margin-left: 14px;
+  margin-bottom: 14px;
+  padding-left: 10px;
+  border-left: 2px solid var(--dynamic-color);
+}
+
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+/* file item */
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fafafa;
   font-size: 14px;
-  line-height: 1.3;
-  color: #333;
-  white-space: normal !important;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  max-width: 100%;
-  margin-top: 5px;
+  transition: box-shadow .1s ease;
 }
 
-/* === PAGINATION === */
-.pagination {
-  margin-top: 25px;
-  text-align: center;
+.file-item:hover {
+  box-shadow: 0 2px 6px rgba(0,0,0,.1);
 }
 
-.pagination a {
-  padding: 8px 16px;
-  border-radius: 5px;
-  border: 1px solid #008080;
-  background: #e0ffff;
-  color: #006666;
-  margin: 4px;
-  text-decoration: none;
+/* SVG folder icon */
+.folder-icon {
+  width: 20px;
+  height: 20px;
+  fill: var(--dynamic-color);
+}
+
+.file-icon {
+  width: 18px;
+  height: 18px;
+  fill: #444;
 }
 </style>
 </head>
 
 <body>
-<div class="wrapper">
 
-<h2 style="margin-bottom:20px;">Video Drive View</h2>
+<div class="archive-wrap">
 
-{% assign posts = site.posts %}
-{% assign per_page = 50 %}
-{% assign page_num = 1 %}
-{% assign offset = per_page | times: page_num | minus: per_page %}
-{% assign current_posts = posts | slice: offset, per_page %}
+{% assign video_posts = site.posts | where_exp: "p", "p.categories contains 'video'" %}
 
-{% assign grouped = current_posts | group_by_exp:"post", "post.date | date: '%m/%d'" %}
+{% assign grouped = video_posts | group_by: "date" %}
 
-{% for month in grouped %}
+{% comment %}
+We regroup by month → then day
+{% endcomment %}
 
-<div class="folder-title">
-<svg viewBox="0 0 24 24">
-  <path d="M10 4H2v16h20V6H12l-2-2z"/>
-</svg>
-{{ month.name }}
+{% assign by_month = video_posts | group_by_exp: "p", "p.date | date: '%m'" %}
+
+{% for month in by_month %}
+<div class="month-box">
+
+  <div class="month-title">
+    <!-- folder svg -->
+    <svg class="folder-icon" viewBox="0 0 24 24">
+      <path d="M3 5h6l2 3h10v11H3z"/>
+    </svg>
+
+    Bulan {{ month.name }}
+  </div>
+
+  {% assign by_day = month.items | group_by_exp: "p", "p.date | date: '%d'" %}
+
+  {% for day in by_day %}
+  <div class="day-box">
+    <div class="month-title" style="font-size:15px;">
+      <svg class="folder-icon" viewBox="0 0 24 24">
+        <path d="M3 5h6l2 3h10v11H3z"/>
+      </svg>
+      Tanggal {{ day.name }}
+    </div>
+
+    <div class="file-list">
+
+      {% assign counter = 0 %}
+
+      {% for post in day.items %}
+      {% assign counter = counter | plus: 1 %}
+
+      {% assign num = counter | prepend: '00' | slice: -2, 2 %}
+
+      {% comment %}
+      Clean title → remove dash → make space
+      {% endcomment %}
+
+      {% assign clean = post.title | replace: "-", " " %}
+      {% assign clean = clean | replace: "_", " " %}
+
+      {% assign filename = "video " | append: num | append: " " | append: clean | append: " .mp4" %}
+
+      <a class="file-item" href="{{ post.url | relative_url }}">
+
+        <!-- file SVG -->
+        <svg class="file-icon" viewBox="0 0 24 24">
+          <path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
+        </svg>
+
+        {{ filename }}
+      </a>
+      {% endfor %}
+
+    </div>
+  </div>
+  {% endfor %}
+
 </div>
-
-<div class="drive-grid">
-
-{% assign counter = 0 %}
-{% for post in month.items %}
-  {% assign counter = counter | plus: 1 %}
-  {% assign num = counter | prepend: "00" | slice: -2, 2 %}
-  {% assign cleaned_title = post.title | replace: "-", " " %}
-  {% assign filename = "video " | append: num | append: " " | append: cleaned_title | append: ".mp4" %}
-
-<a href="{{ post.url | relative_url }}" class="drive-item">
-
-  <!-- FILE ICON -->
-  <svg viewBox="0 0 24 24">
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-  </svg>
-
-  <span class="file-title">{{ filename }}</span>
-
-</a>
-
 {% endfor %}
-</div>
-{% endfor %}
-
-<div class="pagination">
-  <a href="/x/1?page01">Page 01</a>
-  <a href="/x/1?page02">Page 02</a>
-</div>
 
 </div>
+
 </body>
 </html>
-
