@@ -89,7 +89,7 @@ permalink: /x/3
 
 <h2>Video Archive</h2>
 
-{%- assign per_page = 20 -%}
+{%- assign per_page = 6 -%}
 {%- assign page_number = page.url | split:"page" | last | remove:"/" | remove:"?" -%}
 
 {%- if page_number == "" or page_number == page.url -%}
@@ -152,7 +152,7 @@ permalink: /x/3
   {%- assign total_pages = total | divided_by: per_page | ceil -%}
 
   {%- for i in (1..total_pages) -%}
-    <a href="/x/?page{{ i | prepend: "0" | slice: -2, 2 }}">Page {{ i | prepend: "0" | slice: -2, 2 }}</a>
+    <a href="/x/3?page{{ i | prepend: "0" | slice: -2, 2 }}">Page {{ i | prepend: "0" | slice: -2, 2 }}</a>
   {%- endfor -%}
 </div>
 
