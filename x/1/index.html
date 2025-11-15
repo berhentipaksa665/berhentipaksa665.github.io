@@ -9,6 +9,7 @@ permalink: /x/1
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Archive /x/1</title>
+
 <style>
   :root{
     --bg:#0f1720;
@@ -55,7 +56,6 @@ permalink: /x/1
   }
   .file .meta{ font-size:12px; color:var(--muted); }
   .small{ font-size:13px; color:var(--muted); margin-bottom:8px; display:block; }
-  /* responsive */
   @media (max-width:600px){
     .files{ gap:8px; }
     .file{ min-width:140px; padding:8px; }
@@ -63,11 +63,14 @@ permalink: /x/1
   }
 </style>
 </head>
+
 <body>
 <div class="container">
+
   <span class="small">Archive view — grouped by <strong>MM/DD</strong></span>
 
   {% assign grouped = site.posts | group_by_exp: "post", "post.date | date: '%m/%d'" %}
+
   {% for day in grouped %}
     {% assign month = day.name | slice:0,2 %}
     {% assign date  = day.name | slice:3,2 %}
@@ -94,10 +97,14 @@ permalink: /x/1
       </div>
 
       <div class="files" role="list">
+
         {% assign counter = 1 %}
+
         {% for post in day.items %}
-          {% capture num %}{{ counter | prepend: "00" | slice: -2 }}{% endcapture %}
+          {% capture num %}{{ counter | plus: 100 | slice: 1, 2 }}{% endcapture %}
+
           <div class="file" role="listitem">
+
             <!-- File SVG -->
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <rect x="3" y="3" width="14" height="18" rx="2" fill="#0b1228"/>
@@ -106,13 +113,22 @@ permalink: /x/1
             </svg>
 
             <div>
-              <a href="{{ post.url | relative_url }}" download="video {{ num }}.mp4">video {{ num }}.mp4</a>
-              <div class="meta">{{ post.title | strip_html | truncate: 60 }} • {{ post.date | date: "%Y-%m-%d" }}</div>
+              <!-- Link menuju POSTINGAN ASLI -->
+              <a href="{{ post.url | relative_url }}">
+                video {{ num }}.mp4
+              </a>
+
+              <div class="meta">
+                {{ post.title | strip_html | truncate: 60 }}
+                • {{ post.date | date: "%Y-%m-%d" }}
+              </div>
             </div>
+
           </div>
 
           {% assign counter = counter | plus: 1 %}
         {% endfor %}
+
       </div>
     </div>
 
