@@ -1,0 +1,152 @@
+---
+layout: null
+permalink: /x/4
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Video Explorer</title>
+
+<link rel="stylesheet" href="https://adabunalima5.github.io/file/css/css008080.css">
+
+<style>
+/* WRAPPER */
+.wrapper {
+  max-width: 1100px;
+  margin: auto;
+  padding: 15px;
+}
+
+/* SECTION TITLE */
+.month-title {
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+  margin: 25px 0 10px;
+  gap: 6px;
+}
+
+/* WINDOWS EXPLORER GRID */
+.explorer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+/* ITEM (File Explorer Box) */
+.explorer-item {
+  background: #f0ffff;
+  border: 1px solid #008080;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.explorer-item:hover {
+  background: #e0ffff;
+  border-color: #00aaaa;
+  transform: scale(1.02);
+}
+
+/* FOLDER/FILE ICON */
+.file-icon {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 8px;
+  fill: #008080;
+}
+
+/* MULTILINE TITLE (WRAP 2–3 baris) */
+.file-title {
+  font-size: 14px;
+  text-align: center;
+  line-height: 1.3;
+
+  display: block;
+  max-width: 100%;
+  white-space: normal !important;   /* override css bawaan */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* PAGINATION */
+.pagination {
+  margin-top: 25px;
+  text-align: center;
+}
+.pagination a {
+  padding: 7px 14px;
+  border: 1px solid #008080;
+  border-radius: 6px;
+  background: #e0ffff;
+  color: #006666;
+  text-decoration: none;
+  margin: 4px;
+}
+</style>
+</head>
+
+<body>
+<div class="wrapper">
+
+<h2>Video Explorer</h2>
+
+{% assign posts = site.posts %}
+{% assign per_page = 40 %}
+{% assign page_num = 1 %}
+{% assign offset = per_page | times: page_num | minus: per_page %}
+{% assign current_posts = posts | slice: offset, per_page %}
+
+{% assign grouped = current_posts | group_by_exp:"post", "post.date | date: '%m/%d'" %}
+
+{% for month in grouped %}
+
+<!-- Folder Title -->
+<div class="month-title">
+<svg class="file-icon" viewBox="0 0 24 24">
+  <path d="M10 4H2v16h20V6H12l-2-2z"/>
+</svg>
+{{ month.name }}
+</div>
+
+<!-- File Explorer Grid -->
+<div class="explorer-grid">
+
+  {% assign counter = 0 %}
+  {% for post in month.items %}
+    {% assign counter = counter | plus: 1 %}
+    {% assign num = counter | prepend: "00" | slice: -2, 2 %}
+    {% assign cleaned_title = post.title | replace: "-", " " %}
+    {% assign filename = "video " | append: num | append: " " | append: cleaned_title | append: ".mp4" %}
+
+<a href="{{ post.url | relative_url }}" class="explorer-item">
+
+  <svg class="file-icon" viewBox="0 0 24 24">
+    <path d="M3 4h18v16H3z" />
+  </svg>
+
+  <span class="file-title">{{ filename }}</span>
+
+</a>
+
+  {% endfor %}
+</div>
+
+{% endfor %}
+
+<!-- Pagination -->
+<div class="pagination">
+  <a href="/x/1?page01">Page 01</a>
+  <a href="/x/1?page02">Page 02</a>
+</div>
+
+</div>
+</body>
+</html>
