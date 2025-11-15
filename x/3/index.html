@@ -1,0 +1,187 @@
+---
+layout: null
+permalink: /x/3
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Video Archive – Google Drive View</title>
+
+<link rel="stylesheet" href="https://adabunalima5.github.io/file/css/css008080.css">
+
+<style>
+
+/* MAIN WRAPPER */
+.wrapper {
+  max-width: 900px;
+  margin: auto;
+  padding: 12px;
+}
+
+/* HEADER STYLE */
+.gdrive-title {
+  font-size: 20px;
+  margin: 10px 0 20px 0;
+  color: #004444;
+}
+
+/* GOOGLE DRIVE LIST VIEW */
+.gd-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* EACH ROW LIKE GOOGLE DRIVE */
+.gd-row {
+  display: grid;
+  grid-template-columns: 42px 1fr 60px;
+  align-items: center;
+  padding: 8px 12px;
+  background: #ffffff;
+  border: 1px solid #c0d7d7;
+  border-radius: 6px;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+}
+
+.gd-row:hover {
+  background: #e7fefe;
+}
+
+/* ICON (FOLDER OR FILE) */
+.gd-icon {
+  width: 26px;
+  fill: #008080;
+}
+
+/* FILE TITLE - MULTI LINE, WRAP */
+.file-title {
+  display: block;
+  font-size: 15px;
+  line-height: 1.32;
+  white-space: normal !important;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 100% !important;
+  color: #003737;
+}
+
+/* RIGHT SIDE (SIZE / LABEL) */
+.gd-meta {
+  font-size: 12px;
+  text-align: right;
+  color: #006666;
+}
+
+/* FOLDER HEADER */
+.folder-header {
+  margin: 20px 0 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #005555;
+  font-size: 17px;
+  font-weight: bold;
+}
+
+.folder-svg {
+  width: 30px;
+  fill: #008080;
+}
+
+/* PAGINATION */
+.pagination {
+  margin-top: 25px;
+  text-align: center;
+}
+
+.pagination a {
+  padding: 7px 14px;
+  border: 1px solid #008080;
+  border-radius: 6px;
+  background: #e0ffff;
+  color: #006666;
+  text-decoration: none;
+  margin: 3px;
+}
+
+.pagination a:hover {
+  background: #b9fafa;
+}
+
+/* MOBILE FRIENDLY */
+@media(max-width: 560px) {
+  .gd-row {
+    grid-template-columns: 34px 1fr 40px;
+    padding: 7px 10px;
+  }
+}
+
+</style>
+</head>
+
+<body>
+<div class="wrapper">
+
+<h2 class="gdrive-title">Google Drive – Video Archive</h2>
+
+{% assign posts = site.posts %}
+{% assign per_page = 30 %}
+{% assign page_num = 1 %}
+{% assign offset = per_page | times: page_num | minus: per_page %}
+{% assign current_posts = posts | slice: offset, per_page %}
+
+{% assign grouped = current_posts | group_by_exp:"post", "post.date | date: '%m/%d'" %}
+
+{% for month in grouped %}
+
+<div class="folder-header">
+  <svg class="folder-svg" viewBox="0 0 24 24">
+    <path d="M10 4H2v16h20V6H12l-2-2z"/>
+  </svg>
+  {{ month.name }}
+</div>
+
+<div class="gd-list">
+
+{% assign counter = 0 %}
+
+{% for post in month.items %}
+  {% assign counter = counter | plus: 1 %}
+  {% assign num = counter | prepend:"00" | slice: -2, 2 %}
+  {% assign cleaned_title = post.title | replace: "-", " " %}
+  {% assign filename = "video " | append: num | append: " " | append: cleaned_title | append: ".mp4" %}
+
+<div class="gd-row">
+
+  <!-- FILE ICON -->
+  <svg class="gd-icon" viewBox="0 0 24 24">
+    <path d="M14 2H6v20h12V8l-4-6z"/>
+  </svg>
+
+  <!-- TITLE (MULTI LINE FIX) -->
+  <a href="{{ post.url | relative_url }}" class="file-title">
+    {{ filename }}
+  </a>
+
+  <!-- META INFO (LIKE GOOGLED DRIVE RIGHT SIDE) -->
+  <div class="gd-meta">File</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endfor %}
+
+<div class="pagination">
+  <a href="/x/1?page01">Page 01</a>
+  <a href="/x/1?page02">Page 02</a>
+</div>
+
+</div>
+</body>
+</html>
