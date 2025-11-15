@@ -1,162 +1,62 @@
 ---
 layout: null
-permalink: /x/3
 ---
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Video Archive</title>
+<div id="video-list"></div>
+<div id="pagination" style="margin-top:20px;"></div>
 
-<link rel="stylesheet" href="https://adabunalima5.github.io/file/css/css008080.css">
+<script>
+const perPage = 10; // jumlah posting per halaman
+let currentPage = 1;
 
-<style>
-/* WRAPPER UTAMA */
-.wrapper {
-  max-width: 900px;
-  margin: auto;
-  padding: 10px;
+// Ambil JSON postingan
+fetch('/posts.json')
+  .then(res => res.json())
+  .then(posts => {
+    renderPagination(posts);
+    renderPosts(posts);
+  });
+
+// Render daftar postingan compact
+function renderPosts(posts) {
+  const list = document.getElementById("video-list");
+  list.innerHTML = "";
+
+  const start = (currentPage - 1) * perPage;
+  const end = start + perPage;
+  const showPosts = posts.slice(start, end);
+
+  showPosts.forEach((post, index) => {
+    const globalIndex = start + index + 1;
+    const num = globalIndex < 10 ? "0" + globalIndex : globalIndex;
+
+    list.innerHTML += `
+      video ${num} ${post.title}.mp4
+      → <a href="${post.url}">${post.url}</a><br>
+    `;
+  });
 }
 
-/* GRID VIDEO */
-.video-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-}
+// Render tombol paginasi
+function renderPagination(posts) {
+  const totalPages = Math.ceil(posts.length / perPage);
+  const nav = document.getElementById("pagination");
 
-/* ITEM */
-.video-item {
-  display: flex;
-  gap: 10px;
-  padding: 10px;
-  border: 1px solid #006666;
-  border-radius: 6px;
-  background: #f0ffff;
-  align-items: center;
-}
-
-/* ICON FOLDER */
-.folder-svg {
-  width: 32px;
-  min-width: 32px;
-  fill: #008080;
-}
-
-/* ==== FIX JUDUL PANJANG (SUPER AMAN MOBILE) ==== */
-.file-title {
-  font-size: 15px;
-  line-height: 1.3;
-  max-width: 100%;  
-  white-space: normal;          
-  overflow-wrap: break-word;    
-  word-break: break-word;       
-  hyphens: auto;                
-  display: inline-block;
-}
-
-/* PAGINATION */
-.pagination {
-  margin-top: 20px;
-  text-align: center;
-}
-
-.pagination a {
-  padding: 6px 12px;
-  border: 1px solid #008080;
-  border-radius: 5px;
-  background: #e0ffff;
-  color: #006666;
-  text-decoration: none;
-  margin: 3px;
-}
-
-/* MOBILE FIX */
-@media (max-width: 480px) {
-  .video-item {
-    padding: 8px;
+  function updateButtons() {
+    nav.innerHTML = `
+      ${currentPage > 1 ? `<button onclick="changePage(${currentPage - 1})">« Prev</button>` : ""}
+      Page ${currentPage} of ${totalPages}
+      ${currentPage < totalPages ? `<button onclick="changePage(${currentPage + 1})">Next »</button>` : ""}
+    `;
   }
-  .file-title {
-    font-size: 14px;
+
+  updateButtons();
+
+  window.changePage = function(page) {
+    currentPage = page;
+    renderPosts(posts);
+    updateButtons();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
-</style>
-</head>
-
-<body>
-<div class="wrapper">
-
-<h2>Video Archive</h2>
-
-{%- assign per_page = 6 -%}
-{%- assign page_number = page.url | split:"page" | last | remove:"/" | remove:"?" -%}
-
-{%- if page_number == "" or page_number == page.url -%}
-  {%- assign page_number = 1 -%}
-{%- endif -%}
-
-{%- assign page_number_int = page_number | remove:"page" | plus: 0 -%}
-{%- assign offset = per_page | times: page_number_int | minus: per_page -%}
-
-{%- assign posts = site.posts -%}
-{%- assign current_posts = posts | slice: offset, per_page -%}
-
-/* Group berdasarkan Bulan/Hari */
-{%- assign grouped = current_posts | group_by_exp:"post", "post.date | date: '%m/%d'" -%}
-
-{%- for month in grouped -%}
-<h3>
-<svg class="folder-svg" viewBox="0 0 24 24">
-  <path d="M10 4H2v16h20V6H12l-2-2z"/>
-</svg>
-{{ month.name }}
-</h3>
-
-<div class="video-grid">
-
-{%- assign counter = 0 -%}
-{%- for post in month.items -%}
-  {%- assign counter = counter | plus: 1 -%}
-  {%- assign num = counter | prepend: "00" | slice: -2, 2 -%}
-
-  {%- assign clean_title = post.title
-    | replace: "-", " "
-    | replace: "_", " "
-  -%}
-
-  {%- assign filename = "video "
-    | append: num
-    | append: " "
-    | append: clean_title
-    | append: ".mp4"
-  -%}
-
-<div class="video-item">
-<svg class="folder-svg" viewBox="0 0 24 24">
-  <path d="M10 4H2v16h20V6H12l-2-2z"/>
-</svg>
-
-<a href="{{ post.url | relative_url }}" class="file-title">
-  {{ filename }}
-</a>
-</div>
-
-{%- endfor -%}
-</div>
-{%- endfor -%}
-
-/* === PAGINATION AUTO === */
-<div class="pagination">
-  {%- assign total = posts | size -%}
-  {%- assign total_pages = total | divided_by: per_page | ceil -%}
-
-  {%- for i in (1..total_pages) -%}
-    <a href="/x/3?page{{ i | prepend: "0" | slice: -2, 2 }}">Page {{ i | prepend: "0" | slice: -2, 2 }}</a>
-  {%- endfor -%}
-</div>
-
-</div>
-</body>
-</html>
-
+</script>
