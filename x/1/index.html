@@ -1,266 +1,83 @@
 ---
-layout: null
-permalink: /x/1
+layout: default
+title: Videos
 ---
 
-{%- comment -%}
-Pagination parsing:
-URL format expected: /x/1?page01  (or page1, page02, etc.)
-{%- endcomment -%}
+<style>
+/* Compact Style mengikuti tone #008080 */
+.video-item a {
+  display:block;
+  color:var(--dynamic-color); 
+  text-decoration:none;
+  font-size:13px;
+  margin:0;
+  padding:0;
+  line-height:1.3;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.video-item a:hover {
+  opacity:.7;
+}
+#pagination button {
+  background:var(--dynamic-color);
+  border:none;
+  color:#fff;
+  padding:4px 10px;
+  margin:0 4px;
+  border-radius:4px;
+  font-size:12px;
+}
+#pagination {
+  margin-top:10px;
+  font-size:13px;
+}
+</style>
 
-{%- assign raw_query = page.url | split: '?' | last -%}
-{%- assign page_num = raw_query | remove: 'page' -%}
-{%- if page_num == raw_query or page_num == '' -%}
-  {%- assign current_page = 1 -%}
-{%- else -%}
-  {%- assign current_page = page_num | plus: 0 -%}
-{%- endif -%}
+<div id="video-list"></div>
+<div id="pagination"></div>
 
-{%- assign per_page = 10 -%}
-{%- assign video_posts = site.posts | where_exp: "p", "p.categories contains 'video'" -%}
-{%- assign total_posts = video_posts | size -%}
-{%- comment -%}
-Compute total_pages safely: ((total_posts - 1) / per_page) + 1
-{%- endcomment -%}
-{%- if total_posts == 0 -%}
-  {%- assign total_pages = 1 -%}
-{%- else -%}
-  {%- assign total_pages = total_posts | minus: 1 | divided_by: per_page | plus: 1 -%}
-{%- endif -%}
+<script>
+const perPage = 10;
+let currentPage = 1;
 
-{%- assign start_index = per_page | times: current_page | minus: per_page -%}
-{%- assign paged_posts = video_posts offset:start_index limit:per_page -%}
+fetch('/posts.json')
+  .then(r => r.json())
+  .then(data => {
+    window.allPosts = data;
+    render();
+  });
 
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Video Archive — Page {{ current_page }}</title>
+function render() {
+  const posts = window.allPosts;
+  const totalPages = Math.ceil(posts.length / perPage);
+  const start = (currentPage - 1) * perPage;
+  const slice = posts.slice(start, start + perPage);
 
-  <!-- Your global CSS -->
-  <link rel="stylesheet" href="https://adabunalima5.github.io/file/css/css008080.css" />
+  const list = document.getElementById("video-list");
+  list.innerHTML = slice.map((p, i) => {
+    const idx = start + i + 1;
+    const num = idx < 10 ? "0" + idx : idx;
+    return `
+      <div class="video-item">
+        <a href="${p.url}">
+          video ${num} ${p.title}.mp4
+        </a>
+      </div>`;
+  }).join("");
 
-  <!-- Local tiny overrides to keep layout compact & non-conflicting -->
-  <style>
-    /* container */
-    .archive-root { margin: 8px auto 32px; padding: 0 6px; max-width: 960px; }
+  const nav = document.getElementById("pagination");
+  nav.innerHTML = `
+    ${currentPage>1?`<button onclick="go(${currentPage-1})">« Prev</button>`:""}
+    Page ${currentPage}/${totalPages}
+    ${currentPage<totalPages?`<button onclick="go(${currentPage+1})">Next »</button>`:""}
+  `;
+}
 
-    /* month box (compact) */
-    .month-box {
-      border: 1px solid #d0d7de;
-      border-left: 4px solid var(--dynamic-color);
-      border-radius: 6px;
-      padding: 8px;
-      margin-bottom: 12px;
-      background: #ffffff;
-    }
-
-    .month-head {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 600;
-      color: var(--dynamic-color);
-      font-size: 15px;
-      margin-bottom: 8px;
-    }
-
-    .month-sub {
-      font-size: 12px;
-      color: #57606a;
-      margin-left: 28px;
-      margin-top: -6px;
-    }
-
-    /* day group */
-    .day-box {
-      margin-left: 6px;
-      padding-left: 10px;
-      border-left: 2px solid rgba(0,128,128,0.12);
-      margin-bottom: 10px;
-    }
-
-    .day-head {
-      display:flex;
-      align-items:center;
-      gap:8px;
-      font-size:13px;
-      color:#222;
-      margin-bottom:6px;
-    }
-
-    /* file list compact */
-    .file-list { display: flex; flex-direction: column; gap: 6px; }
-
-    .file-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 8px;
-      border-radius: 6px;
-      background: #fafafa;
-      border: 1px solid #e6e6e6;
-      font-size: 14px;
-    }
-    .file-item:hover { box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
-
-    /* icons */
-    .icon-folder { width:18px; height:18px; flex-shrink:0; fill:var(--dynamic-color); }
-    .icon-file { width:16px; height:16px; flex-shrink:0; fill:#444; }
-
-    /* meta small */
-    .file-meta { font-size:12px; color:#666; margin-left: 6px; }
-
-    /* pagination compact */
-    .archive-pager { display:flex; gap:8px; align-items:center; margin-top:12px; flex-wrap:wrap; }
-    .pager-link {
-      padding:6px 8px;
-      background:transparent;
-      border:1px solid rgba(0,0,0,0.06);
-      border-radius:6px;
-      color:var(--dynamic-color);
-      text-decoration:none;
-      font-size:13px;
-    }
-    .pager-link.current {
-      background:var(--dynamic-color);
-      color:#fff;
-      border-color:var(--dynamic-color);
-    }
-    .pager-link:hover { background: rgba(0,128,128,0.06); }
-
-    /* responsive tweaks */
-    @media (max-width:640px) {
-      .month-head { font-size:14px; }
-      .file-item { font-size:13px; }
-    }
-  </style>
-</head>
-<body>
-  <div class="archive-root">
-
-    <h2 style="margin:6px 0 12px; color:var(--dynamic-color);">Video Archive — Page {{ current_page }}</h2>
-
-    {%- if paged_posts == empty -%}
-      <div class="latest-empty">No video posts found.</div>
-    {%- else -%}
-
-      {%- comment -%}
-      Group paged posts by month (YYYY-MM), then by day (DD).
-      Numbering (video 01, 02...) resets per day group.
-      {%- endcomment -%}
-
-      {%- assign grouped_month = paged_posts | group_by_exp: "p", "p.date | date: '%Y-%m'" -%}
-
-      {%- for month_group in grouped_month -%}
-        {%- assign year = month_group.name | slice: 0, 4 -%}
-        {%- assign month = month_group.name | slice: 5, 2 -%}
-
-        <section class="month-box" aria-label="Month {{ year }}/{{ month }}">
-          <div class="month-head">
-            <!-- folder svg (uses dynamic-color) -->
-            <svg class="icon-folder" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M3 5h6l2 3h10v11H3z"></path>
-            </svg>
-
-            <div>
-              {{ year }}/{{ month }}
-              <div class="month-sub">{{ month_group.items | size }} video{% if month_group.items | size > 1 %}s{% endif %}</div>
-            </div>
-          </div>
-
-          {%- assign grouped_day = month_group.items | group_by_exp: "p", "p.date | date: '%d'" -%}
-
-          {%- for day_group in grouped_day -%}
-            <div class="day-box" aria-label="Day {{ day_group.name }}">
-              <div class="day-head">
-                <svg class="icon-folder" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M3 5h6l2 3h10v11H3z"></path>
-                </svg>
-                <div>Day {{ day_group.name }}</div>
-              </div>
-
-              <div class="file-list">
-                {%- assign counter = 0 -%}
-                {%- for post in day_group.items -%}
-                  {%- assign counter = counter | plus: 1 -%}
-                  {%- capture num %}{{ counter | plus: 100 | slice: 1, 2 }}{% endcapture %}
-
-                  {%- comment -%}
-                  Sanitize title:
-                  - remove dangerous characters: / \ ? : * " < > | 
-                  - collapse multiple spaces
-                  - trim
-                  {%- endcomment -%}
-
-                  {%- capture safe_title -%}
-                    {{ post.title
-                       | replace: "/", " "
-                       | replace: "\\", " "
-                       | replace: "?", " "
-                       | replace: ":", " "
-                       | replace: "*", " "
-                       | replace: '"', " "
-                       | replace: "<", " "
-                       | replace: ">", " "
-                       | replace: "|", " "
-                       | replace: "  ", " "
-                       | strip
-                    }}
-                  {%- endcapture -%}
-                  {%- assign safe_title = safe_title | replace: "  ", " " -%}
-
-                  {%- capture filename -%}
-                    video {{ num }} {{ safe_title }}.mp4
-                  {%- endcapture -%}
-
-                  <a class="file-item" href="{{ post.url | relative_url }}" title="{{ filename }}">
-                    <svg class="icon-file" viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"></path>
-                    </svg>
-
-                    <span>{{ filename }}</span>
-                    <span class="file-meta">{{ post.date | date: "%Y-%m-%d" }}</span>
-                  </a>
-                {%- endfor -%}
-              </div>
-            </div>
-          {%- endfor -%}
-        </section>
-      {%- endfor -%}
-
-    {%- endif -%}
-
-    <!-- Pagination (SEO-friendly links: /x/1?page01) -->
-    <nav class="archive-pager" role="navigation" aria-label="Pagination">
-      {%- if current_page > 1 -%}
-        {%- assign prev = current_page | minus: 1 -%}
-        <a class="pager-link" href="/x/1?page{{ prev | prepend: '0' }}">Prev</a>
-      {%- endif -%}
-
-      {%- comment -%} Show numbered page links (1..total_pages). Keep compact if many pages. {%- endcomment -%}
-      {%- assign start_page = 1 -%}
-      {%- assign end_page = total_pages -%}
-
-      {%- for i in (start_page..end_page) -%}
-        {%- assign label = i | prepend: '0' -%}
-        {%- if i == current_page -%}
-          <span class="pager-link current">{{ label }}</span>
-        {%- else -%}
-          <a class="pager-link" href="/x/1?page{{ label }}">{{ label }}</a>
-        {%- endif -%}
-      {%- endfor -%}
-
-      {%- if current_page < total_pages -%}
-        {%- assign nxt = current_page | plus: 1 -%}
-        <a class="pager-link" href="/x/1?page{{ nxt | prepend: '0' }}">Next</a>
-      {%- endif -%}
-    </nav>
-
-  </div>
-</body>
-</html>
-
-
-
+function go(p) {
+  currentPage = p;
+  render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
