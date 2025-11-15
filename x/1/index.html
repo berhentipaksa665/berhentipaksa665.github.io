@@ -1,0 +1,123 @@
+---
+layout: null
+permalink: /x/1
+---
+
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Archive /x/1</title>
+<style>
+  :root{
+    --bg:#0f1720;
+    --card:#0b1220;
+    --muted:#9aa4b2;
+    --accent:#ffd166;
+    --file-bg:#0b1228;
+  }
+  body{
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background: linear-gradient(180deg,#031021 0%, #071426 100%);
+    color: #e6eef6;
+    margin: 24px;
+    line-height:1.45;
+  }
+  .container{ max-width:980px; margin:0 auto; }
+  .folder-block{
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.03);
+    padding: 14px;
+    border-radius:12px;
+    margin-bottom:16px;
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+  }
+  .folder-meta{ min-width:120px; display:flex; align-items:center; gap:10px; }
+  .folder-name{ font-weight:600; font-size:15px; color:var(--accent); }
+  .folder-sub{ font-size:12px; color:var(--muted); }
+  .files{ flex:1; display:flex; flex-wrap:wrap; gap:10px; align-items:flex-start; }
+  .file{
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:10px;
+    padding:10px 12px;
+    min-width:170px;
+    display:flex;
+    gap:10px;
+    align-items:center;
+    border:1px solid rgba(255,255,255,0.02);
+  }
+  .file svg{ width:28px; height:28px; flex:0 0 28px; }
+  .file a{
+    color:#e6eef6; text-decoration:none; font-weight:500; display:block;
+  }
+  .file .meta{ font-size:12px; color:var(--muted); }
+  .small{ font-size:13px; color:var(--muted); margin-bottom:8px; display:block; }
+  /* responsive */
+  @media (max-width:600px){
+    .files{ gap:8px; }
+    .file{ min-width:140px; padding:8px; }
+    .folder-meta{ min-width:90px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <span class="small">Archive view — grouped by <strong>MM/DD</strong></span>
+
+  {% assign grouped = site.posts | group_by_exp: "post", "post.date | date: '%m/%d'" %}
+  {% for day in grouped %}
+    {% assign month = day.name | slice:0,2 %}
+    {% assign date  = day.name | slice:3,2 %}
+
+    <div class="folder-block" aria-labelledby="folder-{{ forloop.index }}">
+      <div class="folder-meta">
+        <!-- Folder SVG -->
+        <svg viewBox="0 0 24 24" width="44" height="44" aria-hidden="true">
+          <defs>
+            <linearGradient id="g{{ forloop.index }}" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0" stop-color="#ffd166"/>
+              <stop offset="1" stop-color="#ffb86b"/>
+            </linearGradient>
+          </defs>
+          <rect x="1" y="6" width="22" height="15" rx="3" fill="#1b2330"/>
+          <path d="M3 8h6l2 2h10v9a2 2 0 0 1-2 2H3V8z" fill="url(#g{{ forloop.index }})" opacity="0.12"/>
+          <path d="M3 6a2 2 0 0 1 2-2h3l2 2h9a2 2 0 0 1 2 2v1H3V6z" fill="url(#g{{ forloop.index }})" opacity="0.18"/>
+        </svg>
+
+        <div>
+          <div id="folder-{{ forloop.index }}" class="folder-name">{{ month }}/{{ date }}</div>
+          <div class="folder-sub">{{ day.items | size }} file{% if day.items | size > 1 %}s{% endif %}</div>
+        </div>
+      </div>
+
+      <div class="files" role="list">
+        {% assign counter = 1 %}
+        {% for post in day.items %}
+          {% capture num %}{{ counter | prepend: "00" | slice: -2 }}{% endcapture %}
+          <div class="file" role="listitem">
+            <!-- File SVG -->
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="3" width="14" height="18" rx="2" fill="#0b1228"/>
+              <path d="M17 3v6h4" fill="none" stroke="#ffd166" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+              <rect x="5" y="7" width="8" height="10" rx="1" stroke="#ffffff10" fill="#071426"/>
+            </svg>
+
+            <div>
+              <a href="{{ post.url | relative_url }}" download="video {{ num }}.mp4">video {{ num }}.mp4</a>
+              <div class="meta">{{ post.title | strip_html | truncate: 60 }} • {{ post.date | date: "%Y-%m-%d" }}</div>
+            </div>
+          </div>
+
+          {% assign counter = counter | plus: 1 %}
+        {% endfor %}
+      </div>
+    </div>
+
+  {% endfor %}
+
+</div>
+</body>
+</html>
