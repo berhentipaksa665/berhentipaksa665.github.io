@@ -3,187 +3,127 @@ layout: null
 permalink: /x/1
 ---
 
-{%- comment -%}
-  /x/1
-  - Menggunakan CSS utama: css008080.css
-  - Pagination SEO: /x/1?page01, /x/1?page02 ...
-  - Grouping: month (YYYY-MM) -> day (DD)
-  - File name: "video 01 <Title>.mp4" (spaces preserved; characters berbahaya dihapus)
-  - Numbering reset per day
-{%- endcomment -%}
-
-{%- assign raw_page_query = page.url | split: '?' | last -%}
-{%- assign page_num = raw_page_query | remove: 'page' -%}
-{%- if page_num == '' or page_num == page.url -%}
-  {%- assign current_page = 1 -%}
-{%- else -%}
-  {%- assign current_page = page_num | plus: 0 -%}
-{%- endif -%}
-
-{%- assign per_page = 100 -%} {#-- jumlah posting per halaman pagination (ubah jika perlu) --#}
-{%- assign all_posts = site.posts -%}
-{%- assign total_posts = all_posts | size -%}
-{%- assign total_pages = total_posts | divided_by: per_page | ceil -%}
-{%- assign start_index = per_page | times: current_page | minus: per_page -%}
-{%- assign paged_posts = all_posts offset:start_index limit:per_page -%}
-
-<!doctype html>
-<html lang="id">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Archive /x/1 — Page {{ current_page }}</title>
+<meta charset="UTF-8">
+<title>Video Archive</title>
 
-<!-- gunakan stylesheet utama -->
-<link rel="stylesheet" href="https://adabunalima5.github.io/file/css/css008080.css" />
+<link rel="stylesheet" href="https://adabunalima5.github.io/file/css/css008080.css">
 
-<!-- override/penyesuaian lokal: compact, rapat, rapi -->
 <style>
-  /* pembungkus khusus agar tidak bentrok dengan global */
-  .indrix-archive { margin: 12px 6px 40px; font-family: Inter, system-ui, sans-serif; }
-  .indrix-archive h2 { margin: 0 0 10px; font-size: 18px; color: var(--dynamic-color); }
-  .month-block { margin-bottom: 10px; border-radius:6px; padding:6px; }
-  .month-head { display:flex; align-items:center; gap:8px; }
-  .month-head .label { font-weight:600; color:var(--dynamic-color); font-size:15px; }
-  .month-head .count { font-size:12px; color:#666; margin-left:6px; }
+/* WRAPPER */
+.wrapper {
+  max-width: 900px;
+  margin: auto;
+  padding: 10px;
+}
 
-  .day-block { margin:6px 0 6px 18px; padding:4px 6px; border-radius:6px; }
-  .day-head { display:flex; align-items:center; gap:8px; font-size:14px; color:#222; }
+/* GRID VIDEO */
+.video-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
 
-  .files { margin-left: 28px; display:flex; flex-direction:column; gap:6px; }
-  .file-item { display:flex; gap:8px; align-items:center; padding:4px 6px; border-radius:6px; background:#fff; border:1px solid #e6efef; }
-  .file-item a { color: #222; text-decoration:none; font-size:14px; display:inline-block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:720px; }
-  .file-meta { font-size:12px; color:#666; margin-left:8px; white-space:nowrap; }
+/* ITEM */
+.video-item {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #006666;
+  border-radius: 6px;
+  background: #f0ffff;
+  align-items: center;
+}
 
-  .icon { width:18px; height:18px; flex-shrink:0; }
-  .month-icon, .day-icon { fill:var(--dynamic-color); }
-  .file-icon { stroke:var(--dynamic-color); fill:none; stroke-width:1.2; }
+/* ICON FOLDER */
+.folder-svg {
+  width: 32px;
+  min-width: 32px;
+  fill: #008080;
+}
 
-  .pagination { margin-top:12px; display:flex; gap:8px; justify-content:flex-start; }
-  .page-link { padding:6px 8px; font-size:13px; background:#f6f8fa; border:1px solid #d0d7de; border-radius:6px; color:var(--dynamic-color); text-decoration:none; }
-  .page-link:hover { background:#eaf6f6; }
+/* FILE NAME (NEW MULTI-LINE STYLE) */
+.file-title {
+  font-size: 15px;
+  line-height: 1.3;
+  white-space: normal;      /* FIX: multi-line */
+  word-wrap: break-word;    /* FIX: wrap kata panjang */
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
 
-  /* responsive: rapat di mobile */
-  @media (max-width:600px){
-    .file-item a { max-width:260px; font-size:13px; }
-    .indrix-archive { margin:8px; padding-bottom:60px; }
-  }
+/* PAGINATION */
+.pagination {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.pagination a {
+  padding: 6px 12px;
+  border: 1px solid #008080;
+  border-radius: 5px;
+  background: #e0ffff;
+  color: #006666;
+  text-decoration: none;
+  margin: 3px;
+}
 </style>
 </head>
+
 <body>
-  <main class="indrix-archive">
-    <h2>Archive Video — Page {{ current_page }} / {{ total_pages }}</h2>
+<div class="wrapper">
 
-    {%- comment -%}
-      Group by month (YYYY-MM), then within each month group by day (DD).
-    {%- endcomment -%}
+<h2>Video Archive</h2>
 
-    {%- assign months = paged_posts | group_by_exp: "p", "p.date | date: '%Y-%m'" -%}
+{% assign posts = site.posts %}
+{% assign per_page = 20 %}
+{% assign page_num = 1 %}
+{% assign offset = per_page | times: page_num | minus: per_page %}
+{% assign current_posts = posts | slice: offset, per_page %}
 
-    {%- for month_group in months -%}
-      {%- assign year = month_group.name | slice: 0,4 -%}
-      {%- assign month_num = month_group.name | slice: 5,2 -%}
+{% assign grouped = current_posts | group_by_exp:"post", "post.date | date: '%m/%d'" %}
 
-      <section class="month-block" aria-labelledby="month-{{ forloop.index }}">
-        <div class="month-head" id="month-{{ forloop.index }}">
-          <!-- folder SVG for month -->
-          <svg class="icon month-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="2" y="6" width="20" height="14" rx="2" />
-            <path d="M4 8h6l2 2h8v8a2 2 0 0 1-2 2H4V8z" fill="#000" opacity="0.05"/>
-          </svg>
+{% for month in grouped %}
+<h3>
+<svg class="folder-svg" viewBox="0 0 24 24">
+  <path d="M10 4H2v16h20V6H12l-2-2z"/>
+</svg>
+{{ month.name }}
+</h3>
 
-          <div class="label">{{ month_num }}</div>
-          <div class="count">{{ month_group.items | size }} video{% if month_group.items | size > 1 %}s{% endif %}</div>
-        </div>
+<div class="video-grid">
 
-        {%- comment -%} group days inside this month_group {%- endcomment -%}
-        {%- assign days = month_group.items | group_by_exp: "pp", "pp.date | date: '%d'" -%}
+  {% assign counter = 0 %}
+  {% for post in month.items %}
+    {% assign counter = counter | plus: 1 %}
+    {% assign num = counter | prepend: "00" | slice: -2, 2 %}
+    {% assign cleaned_title = post.title | replace: "-", " " %}
 
-        {%- for day_group in days -%}
-          {%- assign day_num = day_group.name -%}
-          <div class="day-block" aria-labelledby="day-{{ forloop.parentloop.index }}-{{ forloop.index }}">
-            <div class="day-head" id="day-{{ forloop.parentloop.index }}-{{ forloop.index }}">
-              <!-- folder SVG for day -->
-              <svg class="icon day-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="3" y="5" width="18" height="14" rx="2" />
-                <path d="M3 8h6l2 2h10v7a2 2 0 0 1-2 2H3V8z" fill="#000" opacity="0.03"/>
-              </svg>
+    {% assign filename = "video " | append: num | append: " " | append: cleaned_title | append: ".mp4" %}
 
-              <div style="font-weight:600;">{{ month_num }}/{{ day_num }}</div>
-              <div class="count" style="margin-left:8px;">{{ day_group.items | size }} file{% if day_group.items | size > 1 %}s{% endif %}</div>
-            </div>
+<div class="video-item">
 
-            <div class="files" role="list">
-              {%- assign counter = 0 -%}
-              {%- for post in day_group.items -%}
-                {%- assign counter = counter | plus: 1 -%}
-                {%- capture num %}{{ counter | plus: 100 | slice: 1, 2 }}{%- endcapture -%}
+<svg class="folder-svg" viewBox="0 0 24 24">
+  <path d="M10 4H2v16h20V6H12l-2-2z" />
+</svg>
 
-                {%- comment -%}
-                  sanitize title: hapus karakter berbahaya, collapse multi-space (best-effort), trim
-                  keep original case; only remove / \ ? : * " < > |
-                {%- endcomment -%}
-                {%- capture safe_title -%}
-                  {{ post.title
-                     | replace: "/", " "
-                     | replace: "\\", " "
-                     | replace: "?", " "
-                     | replace: ":", " "
-                     | replace: "*", " "
-                     | replace: '"', ""
-                     | replace: "<", " "
-                     | replace: ">", " "
-                     | replace: "|", " "
-                     | replace: "  ", " "
-                     | strip
-                  }}
-                {%- endcapture -%}
-                {%- assign safe_title = safe_title | replace: "  ", " " | strip -%}
+<a href="{{ post.url | relative_url }}" class="file-title">
+  {{ filename }}
+</a>
 
-                <div class="file-item" role="listitem">
-                  <!-- file icon -->
-                  <svg class="icon file-icon" viewBox="0 0 24 24" aria-hidden="true">
-                    <rect x="3" y="3" width="14" height="18" rx="2" />
-                    <path d="M17 3v6h4" />
-                  </svg>
+</div>
 
-                  <!-- link menuju postingan asli; tampilkan nama file dengan spasi -->
-                  <div>
-                    <a href="{{ post.url | relative_url }}" title="{{ post.title | escape }}">
-                      video {{ num }} {{ safe_title }}.mp4
-                    </a>
-                    <div class="file-meta">{{ post.date | date: "%Y-%m-%d" }}</div>
-                  </div>
-                </div>
+  {% endfor %}
+</div>
+{% endfor %}
 
-              {%- endfor -%}
-            </div>
-          </div>
-        {%- endfor -%}
-      </section>
-    {%- endfor -%}
+<div class="pagination">
+  <a href="/x/1?page01">Page 01</a>
+  <a href="/x/1?page02">Page 02</a>
+</div>
 
-    <!-- PAGINATION -->
-    <nav class="pagination" role="navigation" aria-label="Pagination">
-      {%- if current_page > 1 -%}
-        {%- assign prev = current_page | minus: 1 -%}
-        {%- if prev < 10 -%}
-          <a class="page-link" href="/x/1?page0{{ prev }}">Prev</a>
-        {%- else -%}
-          <a class="page-link" href="/x/1?page{{ prev }}">Prev</a>
-        {%- endif -%}
-      {%- endif -%}
-
-      {%- if current_page < total_pages -%}
-        {%- assign next = current_page | plus: 1 -%}
-        {%- if next < 10 -%}
-          <a class="page-link" href="/x/1?page0{{ next }}">Next</a>
-        {%- else -%}
-          <a class="page-link" href="/x/1?page{{ next }}">Next</a>
-        {%- endif -%}
-      {%- endif -%}
-    </nav>
-
-  </main>
+</div>
 </body>
 </html>
