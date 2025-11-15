@@ -62,8 +62,8 @@ permalink: /x/1
     .folder-meta{ min-width:90px; }
   }
 </style>
-</head>
 
+</head>
 <body>
 <div class="container">
 
@@ -77,6 +77,7 @@ permalink: /x/1
 
     <div class="folder-block" aria-labelledby="folder-{{ forloop.index }}">
       <div class="folder-meta">
+
         <!-- Folder SVG -->
         <svg viewBox="0 0 24 24" width="44" height="44" aria-hidden="true">
           <defs>
@@ -94,6 +95,7 @@ permalink: /x/1
           <div id="folder-{{ forloop.index }}" class="folder-name">{{ month }}/{{ date }}</div>
           <div class="folder-sub">{{ day.items | size }} file{% if day.items | size > 1 %}s{% endif %}</div>
         </div>
+
       </div>
 
       <div class="files" role="list">
@@ -101,7 +103,31 @@ permalink: /x/1
         {% assign counter = 1 %}
 
         {% for post in day.items %}
+          
+          <!-- NOMOR VIDEO -->
           {% capture num %}{{ counter | plus: 100 | slice: 1, 2 }}{% endcapture %}
+
+          <!-- CLEAN, LOWERCASE, SAFE TITLE -->
+          {% capture safe_title %}
+            {{ post.title
+               | downcase
+               | replace: "/", ""
+               | replace: "\\", ""
+               | replace: "?", ""
+               | replace: ":", ""
+               | replace: "*", ""
+               | replace: '"', ""
+               | replace: "<", ""
+               | replace: ">", ""
+               | replace: "|", ""
+               | replace: "'", ""
+               | replace: ".", ""
+               | replace: "  ", " "
+               | strip
+               | replace: " ", "-"
+            }}
+          {% endcapture %}
+          {% assign safe_title = safe_title | replace: "--", "-" %}
 
           <div class="file" role="listitem">
 
@@ -113,9 +139,9 @@ permalink: /x/1
             </svg>
 
             <div>
-              <!-- Link menuju POSTINGAN ASLI -->
+              <!-- LINK KE POSTINGAN ASLI -->
               <a href="{{ post.url | relative_url }}">
-                video {{ num }}.mp4
+                video-{{ num }}-{{ safe_title }}.mp4
               </a>
 
               <div class="meta">
