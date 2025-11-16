@@ -1,3 +1,266 @@
+---
+layout: null
+---
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+ <!-- awal skript untuk atur style beda domain -->
+<script>
+(async function() {
+  const host = location.hostname.toLowerCase();
+
+  // Daftar domain utama dan file CSS-nya
+  const mapping = {
+    "raiska.my.id": "css-raiska.html",
+    "vibedleakedloop.my.id": "css-vibedleakedloop.html",
+    "trendleakspin.my.id": "css-trendleakspin.html",
+    "trendnestclick.my.id": "css-trendnestclick.html",
+    "trailmodebuzz.my.id": "css-trailmodebuzz.html",
+    "trailburstlab.my.id": "css-trailburstlab.html",
+    "trackswayhive.my.id": "css-trackswayhive.html",
+    "webnestpulse.my.id": "css-webnestpulse.html",
+    "tiltmarklogic.my.id": "css-tiltmarklogic.html",
+    "yllaunitnoc.my.id": "css-yllaunitnoc.html"
+  };
+
+  // Fungsi untuk mencari domain utama yang cocok
+  function getBaseDomain(host) {
+    for (const domain in mapping) {
+      if (host.endsWith(domain)) {
+        return domain;
+      }
+    }
+    return null;
+  }
+
+  // Deteksi domain dasar
+  const baseDomain = getBaseDomain(host);
+  const file = baseDomain ? mapping[baseDomain] : "css-fallback.html";
+
+  try {
+    // Ambil file HTML berisi <style>
+    const response = await fetch("/assets/css-html/" + file);
+    if (!response.ok) throw new Error("Gagal memuat " + file);
+    const html = await response.text();
+
+    // Buat div pembungkus
+    const div = document.createElement("div");
+    div.id = file.replace(".html", "");
+    div.innerHTML = html;
+
+    // Sisipkan ke <head>
+    document.head.appendChild(div);
+  } catch (err) {
+    console.error("Error memuat CSS domain:", err);
+  }
+})();
+</script>
+<!-- akhir skript untuk atur style beda domain -->
+
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
+<link rel="shortcut icon" href="/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+<link rel="manifest" href="/site.webmanifest" />
+<meta name="theme-color" content="#317EFB" />
+
+{% include verif.html %}
+
+	
+{% include head.html %}	
+
+
+<!-- awal Seo Otomatis khusus untuk Homepage -->
+<script>
+(function () {
+  const hostname = location.hostname;
+  const pathname = location.pathname;
+
+  let subdomainRaw = hostname.split('.')[0];
+  if (subdomainRaw.toLowerCase() === 'www') subdomainRaw = hostname.split('.')[1] || '';
+
+  const formatText = str => str
+    .replace(/[-_]/g, ' ')
+    .replace(/\+/g, ' ')         // tambahan: ganti + jadi spasi
+    .replace(/\b\w/g, c => c.toUpperCase());
+
+  const subdomain = formatText(subdomainRaw.trim());
+  const cleanPath = pathname.replace(/^\/+|\/+$/g, '');
+  const isHome = !cleanPath || /^index\.(html?|php)$/i.test(cleanPath);
+
+  let rawPageName = cleanPath.split('/').pop() || '';
+  rawPageName = rawPageName.replace(/\.[^.]+$/, '').trim(); // hilangkan ekstensi
+  rawPageName = decodeURIComponent(rawPageName);
+
+  let titleText = isHome
+    ? subdomain
+    : `${formatText(rawPageName)} - ${subdomain}`;
+
+  // Title
+  let titleTag = document.querySelector('title') || document.createElement('title');
+  titleTag.textContent = titleText;
+  if (!titleTag.parentNode) document.head.appendChild(titleTag);
+
+  // Meta author
+  let metaAuthor = document.querySelector('meta[name="author"]') || document.createElement('meta');
+  metaAuthor.name = 'author';
+  metaAuthor.content = `${subdomain} team`;
+  if (!metaAuthor.parentNode) document.head.appendChild(metaAuthor);
+
+  // OG image
+  let firstImage = document.querySelector('img');
+  let ogImageUrl = firstImage
+    ? (firstImage.src.startsWith('http') ? firstImage.src : location.origin + '/' + firstImage.src)
+    : location.origin + '/photo/fallback.png';
+
+  const setMeta = (attr, key, value) => {
+    let meta = document.querySelector(`${attr === 'property' ? 'meta[property' : 'meta[name'}="${key}"]`) || document.createElement('meta');
+    meta.setAttribute(attr, key);
+    meta.setAttribute('content', value);
+    if (!meta.parentNode) document.head.appendChild(meta);
+  };
+
+  setMeta('property', 'og:title', titleText);
+  setMeta('property', 'og:image', '/photo/fallback.png');
+  setMeta('property', 'og:url', location.href);
+  setMeta('property', 'og:type', 'website');
+
+  // Schema.org WebSite tanpa potentialAction (hilangkan sitelink search)
+  const schemaData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": subdomain,
+    "url": location.origin
+  };
+  let schemaScript = document.createElement('script');
+  schemaScript.type = 'application/ld+json';
+  schemaScript.textContent = JSON.stringify(schemaData);
+  document.head.appendChild(schemaScript);
+
+  // Canonical otomatis sesuai halaman saat ini
+  let canonical = document.querySelector('link[rel="canonical"]') || document.createElement('link');
+  canonical.setAttribute('rel', 'canonical');
+  canonical.setAttribute('href', location.href);
+  if (!canonical.parentNode) document.head.appendChild(canonical);
+
+})();
+</script>
+<!-- akhir Seo Otomatis khusus untuk homepage -->
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"/>
+
+
+
+
+<link rel="sitemap" type="application/xml" href="" id="sitemap-main">
+<link rel="alternate" type="application/rss+xml" href="" id="sitemap-feed">
+
+<script>
+(function() {
+  var origin = window.location.origin;
+  document.getElementById("sitemap-main").href = origin + "/sitemap.xml";
+  document.getElementById("sitemap-feed").href = origin + "/feed.xml";
+})();
+</script>	
+
+
+	
+  </head>
+<body>
+<!-- awal hilltopads video slider ads-->
+<script>
+(function(ulica){
+var d = document,
+    s = d.createElement('script'),
+    l = d.scripts[d.scripts.length - 1];
+s.settings = ulica || {};
+s.src = "\/\/scientific-husband.com\/bAX\/Veshd.G\/lN0pYDWJcj\/rermQ9huiZXUGlDkOPQTVY_3\/MwD\/IUzCNgz\/kmtGNTjBcewGMLjpM\/4zM\/AT";
+s.async = true;
+s.referrerPolicy = 'no-referrer-when-downgrade';
+l.parentNode.insertBefore(s, l);
+})({})
+</script>
+<!-- akhir hilltopads video slider ads-->
+
+<header style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--dynamic-color);">
+  <h1 id="mainTitle" style="
+      margin:0;
+      font-size:16px;
+      color:#fff;
+      flex:1;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;"></h1>
+  <div class="nav-actions" style="margin-left:10px;flex-shrink:0;">
+    <button class="nav-button" id="menuToggle" title="Menu" aria-label="Menu" 
+            style="background:none;border:none;cursor:pointer;">
+      <!-- Hamburger Icon -->
+      <svg id="iconMenu" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" 
+           style="width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2;">
+        <path d="M3 6h18M3 12h18M3 18h18"/>
+      </svg>
+      <!-- Close Icon -->
+      <svg id="iconClose" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" 
+           style="display:none;width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2;">
+        <path d="M6 6l12 12M6 18l12-12"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<script>
+(function(){
+  const host = window.location.hostname.split(".");
+
+  let sub = "";
+
+  if (host[0] === "www") {
+    // www.domain.my.id → ambil host[1]
+    sub = host[1];
+  } else if (host.length === 3) {
+    // domain.my.id → ambil host[0]
+    sub = host[0];
+  } else if (host.length === 4) {
+    // sub01.domain.my.id → ambil host[0]
+    sub = host[0];
+  } else {
+    // fallback, ambil bagian pertama
+    sub = host[0];
+  }
+
+  const clean = sub.replace(/-/g, " "); // ganti strip jadi spasi
+  const title = clean.replace(/\b\w/g, c => c.toUpperCase()); // kapital awal kata
+  document.getElementById("mainTitle").textContent = title;
+})();
+</script>
+
+<div id="menuPanel" style="display:none;background:#333;padding:10px;">
+  <ul style="list-style:none;margin:0;padding:0;">
+    <li><a href="/" style="color:#fff;text-decoration:none;display:block;padding:5px 0;">Home</a></li>
+    <li><a href="/contact.html" style="color:#fff;text-decoration:none;display:block;padding:5px 0;">Contact</a></li>
+    <li><a href="/privacy-policy.html" style="color:#fff;text-decoration:none;display:block;padding:5px 0;">Privacy Policy</a></li>
+    <li><a href="/terms-and-conditions.html" style="color:#fff;text-decoration:none;display:block;padding:5px 0;">Terms & Conditions</a></li>
+  </ul>
+</div>
+
+<script>
+  const toggleBtn = document.getElementById('menuToggle');
+  const menuPanel = document.getElementById('menuPanel');
+  const iconMenu = document.getElementById('iconMenu');
+  const iconClose = document.getElementById('iconClose');
+
+  toggleBtn.addEventListener('click', () => {
+    const isVisible = menuPanel.style.display === 'block';
+    menuPanel.style.display = isVisible ? 'none' : 'block';
+    iconMenu.style.display = isVisible ? 'inline' : 'none';
+    iconClose.style.display = isVisible ? 'none' : 'inline';
+  });
+</script>
+
+<main>
+
+
 <style>
 .recent-posts {
   margin: 1.5rem auto;
@@ -130,7 +393,7 @@ function getCategoryCandidates(hostname) {
 const urlParams = new URLSearchParams(window.location.search);
 const initialPage = parseInt(urlParams.get('page')) || 1;
 const { sub: subCategory, domain: domainCategory } = getCategoryCandidates(window.location.hostname);
-const POSTS_PER_PAGE = 6;
+const POSTS_PER_PAGE = 12;
 let currentPage = initialPage;
 let filteredPosts = [];
 
@@ -288,3 +551,303 @@ function addEllipsis() {
   pagination.appendChild(span);
 }
 </script>
+
+<!-- awal include mengambil dari folder /includes/ berdasarkan nama subdomain/domain -->
+  <div class="spo" id="dynamic-include"></div>
+  <script>
+    const host = window.location.hostname.toLowerCase();
+    const parts = host.split(".");
+    const container = document.getElementById("dynamic-include");
+
+    // Nama subdomain (jika ada) dan domain utama
+    let subdomain = parts.length > 2 ? parts[0].replace(/[^a-z0-9\-]/g, "") : null;
+    let domain = parts.length > 2 ? parts[1].replace(/[^a-z0-9\-]/g, "") : parts[0].replace(/[^a-z0-9\-]/g, "");
+
+    // Kandidat file sesuai aturan
+    let subFile = subdomain ? subdomain + ".html" : null;
+    let domainFile = domain + ".html";
+    let fallbackFile = "fallback.html";
+
+    // Fungsi untuk mencoba load file berurutan
+    function loadFile(fileList) {
+      if (fileList.length === 0) return;
+
+      const file = fileList.shift();
+      fetch("/includes/" + file)
+        .then(r => {
+          if (!r.ok) throw new Error("not found");
+          return r.text();
+        })
+        .then(html => container.innerHTML = html)
+        .catch(() => loadFile(fileList)); // coba file berikutnya
+    }
+
+    // Susun urutan fallback
+    const filesToTry = [];
+    if (subFile) filesToTry.push(subFile); // coba subdomain dulu
+    filesToTry.push(domainFile);           // lalu domain
+    filesToTry.push(fallbackFile);         // terakhir fallback
+
+    // Jalankan loader
+    loadFile(filesToTry);
+  </script>
+<!-- akhir include -->
+
+
+
+
+</main>
+
+<!-- awal search -->
+
+<style>
+/* 🌟 Wrapper utama */
+.home-search-wrapper {
+  text-align: center;
+  width: 80%;
+  max-width: 600px;
+  padding: 2rem;
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* ✨ Judul */
+.home-search-wrapper h2 {
+  font-size: 2rem;
+  margin-bottom: 0.6rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--dynamic-color);
+}
+
+/* 💬 Subteks */
+.home-search-wrapper p {
+  color: var(--dynamic-color);
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+}
+
+/* 🔍 Form pencarian */
+#customSearchForm {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 2rem;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+#customSearchForm:focus-within {
+  box-shadow: 0 5px 16px rgba(0,0,0,0.15);
+}
+
+/* Input */
+#searchInput {
+  flex: 1;
+  border: none;
+  padding: 0.9rem 1.3rem;
+  font-size: 1rem;
+  outline: none;
+  background: transparent;
+  color: var(--dynamic-color);
+}
+
+#searchInput::placeholder {
+  color: var(--dynamic-color);
+  font-style: italic;
+}
+
+/* Tombol */
+.search-btn {
+  background: var(--dynamic-color);
+  border: none;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  transition: background 0.25s ease;
+}
+
+.search-btn:hover {
+  background: #1d4ed8;
+}
+
+.search-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Animasi lembut */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsif */
+@media (max-width: 480px) {
+  .home-search-wrapper h2 {
+    font-size: 1.6rem;
+  }
+  #searchInput {
+    padding: 0.7rem 1rem;
+  }
+  .search-btn {
+    width: 46px;
+    height: 46px;
+  }
+}
+</style>
+
+<center>
+<section class="home-search-wrapper">
+  <h2>Search your files</h2>
+  <p>Instantly find anything you’ve saved, shared, or created.</p>
+
+  <form id="customSearchForm" method="get" action="/search/"> 
+    <input 
+      id="searchInput"
+      type="text"
+      name="q"
+      placeholder="Type to start searching..."
+      autocomplete="on"/>
+    <button type="submit" class="search-btn" aria-label="Search">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M21 20l-5.8-5.8a7 7 0 10-1.4 1.4L20 21l1-1zM4 10a6 6 0 1112 0 6 6 0 01-12 0z"/>
+      </svg>
+    </button>
+  </form>
+</section>
+</center>
+
+<!-- akhir search -->
+    <br /><br />
+
+<center><pre>ads</pre><hr />
+<!--Adsterra by - download-def.blogspot.com - Downloads -->
+<script type="text/javascript">
+	atOptions = {
+		'key' : '0e4b159c8f2f9da4695aefe5495c2abc',
+		'format' : 'iframe',
+		'height' : 50,
+		'width' : 320,
+		'params' : {}
+	};
+</script>
+<script type="text/javascript" src="//smithburka.com/0e4b159c8f2f9da4695aefe5495c2abc/invoke.js"></script>
+<br />
+<script type="text/javascript">
+	atOptions = {
+		'key' : 'fae60d25ae7a7d8b74436fb1a1293dec',
+		'format' : 'iframe',
+		'height' : 60,
+		'width' : 468,
+		'params' : {}
+	};
+</script>
+<script type="text/javascript" src="//smithburka.com/fae60d25ae7a7d8b74436fb1a1293dec/invoke.js"></script>
+<br />
+<script type="text/javascript">
+	atOptions = {
+		'key' : '29c6006d61ee9d0b5ae56551a100ff86',
+		'format' : 'iframe',
+		'height' : 300,
+		'width' : 160,
+		'params' : {}
+	};
+</script>
+<script type="text/javascript" src="//smithburka.com/29c6006d61ee9d0b5ae56551a100ff86/invoke.js"></script>
+<br />
+<script type="text/javascript">
+	atOptions = {
+		'key' : '3e6125ca2ed953f074c0a42574676e86',
+		'format' : 'iframe',
+		'height' : 600,
+		'width' : 160,
+		'params' : {}
+	};
+</script>
+<script type="text/javascript" src="//smithburka.com/3e6125ca2ed953f074c0a42574676e86/invoke.js"></script>
+<br />
+<script type="text/javascript">
+	atOptions = {
+		'key' : 'bac35cff8a846164a9ce64e2a90ac6b1',
+		'format' : 'iframe',
+		'height' : 90,
+		'width' : 728,
+		'params' : {}
+	};
+</script>
+<script type="text/javascript" src="//smithburka.com/bac35cff8a846164a9ce64e2a90ac6b1/invoke.js"></script>
+<br />
+<script type="text/javascript">
+	atOptions = {
+		'key' : '7a9083c8f03a4157dd9537e416ab81f1',
+		'format' : 'iframe',
+		'height' : 250,
+		'width' : 300,
+		'params' : {}
+	};
+</script>
+<script type="text/javascript" src="//smithburka.com/7a9083c8f03a4157dd9537e416ab81f1/invoke.js"></script>
+</center>
+
+
+
+
+
+
+
+	
+
+
+{% include file01.html %}
+
+	
+	
+<!--FOOTER-->
+<footer style="text-align: center; padding: 30px 20px; font-size: 16px; color: #666;">
+  <small>
+    &copy; </small>
+<span id="current-year"></span> 
+ -  <a id="main-heading2" href="/" style="color: inherit; text-decoration: none;"></a>.
+  <span>   All rights reserved.</span> 
+  <script>
+    (function () {
+      const domain = window.location.hostname || "";
+      const parts = domain.split(".");
+      let brand = "Blog";
+      let rootDomain = domain;
+      // Khusus untuk .my.id
+      if (domain.endsWith(".my.id") && parts.length > 2) {
+        // Ambil nama domain utama (2 bagian sebelum .my.id)
+        const baseName = parts[parts.length - 3]; // contoh: domain / do-main
+        rootDomain = "www." + baseName + ".my.id";
+
+        // Ubah jadi Title Case dengan spasi jika ada tanda minus
+        brand = baseName
+          .split("-")
+          .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+          .join(" ");
+      }
+
+      // Update elemen
+      document.getElementById("current-year").textContent = new Date().getFullYear();
+      const headingEl = document.getElementById("main-heading2");
+      headingEl.textContent = brand;
+      headingEl.href = "https://" + rootDomain;
+    })();
+  </script>
+</footer>
+	
+	
+
+<br /><br /><br />
+
+
+	
+
+</body>
+</html>
