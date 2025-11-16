@@ -260,6 +260,7 @@ l.parentNode.insertBefore(s, l);
 
 <main>
 
+
 <style>
 .recent-posts {
   margin: 1.5rem auto;
@@ -368,6 +369,9 @@ l.parentNode.insertBefore(s, l);
 </section>
 
 <script>
+/* SAFE LIQUID INCLUDE */
+const adsHTML = `{% include /ads/feed.html %}`;
+
 function getCategoryCandidates(hostname) {
   const parts = hostname.split('.');
   if (parts.length < 2) return { sub: null, domain: null };
@@ -453,10 +457,10 @@ function renderPosts() {
     const card = document.createElement('div');
     card.className = 'post-card';
 
-    /* === ADS INSERTED BEFORE TITLE === */
-    card.innerHTML += `{% include /ads/feed.html %}`;
+    /* === INSERT ADS (SAFE) === */
+    card.innerHTML += adsHTML;
 
-    /* === TITLE (TEXT ONLY) WITH CLASS="spo" === */
+    /* === TITLE WITH CLASS="spo" === */
     const h3 = document.createElement('h3');
     h3.className = "spo";
     h3.textContent = post.title || '(no title)';
