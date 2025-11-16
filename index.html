@@ -330,6 +330,21 @@ l.parentNode.insertBefore(s, l);
   opacity: .95;
 }
 
+/* ADS SLOT (responsive wrapper for your 320x50 file) */
+.ads-slot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: .5rem;
+}
+.ads-slot iframe {
+  border: 0;
+  width: 320px;
+  height: 50px;
+  max-width: 100%;
+  display: block;
+}
+
 /* PAGINATION */
 .pagination {
   display: flex;
@@ -360,14 +375,6 @@ l.parentNode.insertBefore(s, l);
   background: #ccc;
   color: #555;
 }
-
-/* small helper so ad area won't stretch card layout */
-.post-ad {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin-bottom: .5rem;
-}
 </style>
 
 <section class="recent-posts">
@@ -376,26 +383,19 @@ l.parentNode.insertBefore(s, l);
 </section>
 
 <script>
-/*
-  SAFE: load static /ads/feed.html (plain HTML) at runtime (no Liquid, no include)
-  - adsHTML will contain the HTML string (or empty string on error)
-  - inserted before title (as requested)
-*/
-
-let adsHTML = ''; // fallback empty
-fetch('/ads/feed.html', { cache: 'no-store' })
-  .then(res => {
-    if (!res.ok) throw new Error('ads not found');
-    return res.text();
-  })
-  .then(text => {
-    // Optional: sanitize minimal risky tags if you want; we assume feed.html is controlled by you
-    adsHTML = text;
-  })
-  .catch(err => {
-    console.warn('Could not load /ads/feed.html:', err);
-    adsHTML = ''; // keep empty so it won't break layout
-  });
+/* SAFELY USE IFRAME (no Liquid/includes) */
+/* pastikan file /ads/feed.html ada dan dapat diakses di GitHub Pages */
+const adsHTML = `
+  <div class="ads-slot" aria-hidden="true">
+    <iframe
+      src="/ads/feed.html"
+      width="320"
+      height="50"
+      loading="lazy"
+      referrerpolicy="no-referrer"
+      title="ad-slot"></iframe>
+  </div>
+`;
 
 function getCategoryCandidates(hostname) {
   const parts = hostname.split('.');
@@ -482,22 +482,16 @@ function renderPosts() {
     const card = document.createElement('div');
     card.className = 'post-card';
 
-    // === INSERT ADS (SAFE) ===
-    if (adsHTML) {
-      const adWrapper = document.createElement('div');
-      adWrapper.className = 'post-ad';
-      // insert as HTML; since it's your static file, it's expected content (e.g., an iframe or img)
-      adWrapper.innerHTML = adsHTML;
-      card.appendChild(adWrapper); // appended first, so it appears BEFORE the title visually
-    }
+    /* === INSERT ADS (IFRAME) BEFORE TITLE === */
+    card.innerHTML += adsHTML;
 
-    // === TITLE (text only) with class "spo" ===
+    /* === TITLE (TEXT ONLY) WITH CLASS="spo" === */
     const h3 = document.createElement('h3');
     h3.className = "spo";
     h3.textContent = post.title || '(no title)';
     card.appendChild(h3);
 
-    // === IMAGE AS LINK ===
+    /* === IMAGE AS LINK === */
     const link = document.createElement('a');
     link.href = post.url || '#';
     link.className = 'post-thumb-wrap';
@@ -509,9 +503,9 @@ function renderPosts() {
 
     link.appendChild(img);
 
-    // PLAY ICON
+    /* PLAY ICON */
     link.innerHTML += `
-      <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+      <svg viewBox="0 0 64 64">
         <circle cx="32" cy="32" r="30"
           fill="rgba(0,0,0,0.35)"
           stroke="var(--dynamic-color)"
@@ -589,6 +583,7 @@ function addEllipsis() {
   pagination.appendChild(span);
 }
 </script>
+
 
 
 
@@ -897,3 +892,4 @@ function addEllipsis() {
 
 </body>
 </html>
+	
