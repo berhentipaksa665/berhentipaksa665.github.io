@@ -260,7 +260,6 @@ l.parentNode.insertBefore(s, l);
 
 <main>
 
-
 <style>
 .recent-posts {
   margin: 1.5rem auto;
@@ -361,6 +360,14 @@ l.parentNode.insertBefore(s, l);
   background: #ccc;
   color: #555;
 }
+
+/* small helper so ad area won't stretch card layout */
+.post-ad {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: .5rem;
+}
 </style>
 
 <section class="recent-posts">
@@ -369,8 +376,26 @@ l.parentNode.insertBefore(s, l);
 </section>
 
 <script>
+/*
+  SAFE: load static /ads/feed.html (plain HTML) at runtime (no Liquid, no include)
+  - adsHTML will contain the HTML string (or empty string on error)
+  - inserted before title (as requested)
+*/
 
-const adsHTML = `{% raw %}{% include /ads/feed.html %}{% endraw %}`;
+let adsHTML = ''; // fallback empty
+fetch('/ads/feed.html', { cache: 'no-store' })
+  .then(res => {
+    if (!res.ok) throw new Error('ads not found');
+    return res.text();
+  })
+  .then(text => {
+    // Optional: sanitize minimal risky tags if you want; we assume feed.html is controlled by you
+    adsHTML = text;
+  })
+  .catch(err => {
+    console.warn('Could not load /ads/feed.html:', err);
+    adsHTML = ''; // keep empty so it won't break layout
+  });
 
 function getCategoryCandidates(hostname) {
   const parts = hostname.split('.');
@@ -457,16 +482,22 @@ function renderPosts() {
     const card = document.createElement('div');
     card.className = 'post-card';
 
-    /* === INSERT ADS (SAFE) === */
-    card.innerHTML += adsHTML;
+    // === INSERT ADS (SAFE) ===
+    if (adsHTML) {
+      const adWrapper = document.createElement('div');
+      adWrapper.className = 'post-ad';
+      // insert as HTML; since it's your static file, it's expected content (e.g., an iframe or img)
+      adWrapper.innerHTML = adsHTML;
+      card.appendChild(adWrapper); // appended first, so it appears BEFORE the title visually
+    }
 
-    /* === TITLE WITH CLASS="spo" === */
+    // === TITLE (text only) with class "spo" ===
     const h3 = document.createElement('h3');
     h3.className = "spo";
     h3.textContent = post.title || '(no title)';
     card.appendChild(h3);
 
-    /* === IMAGE AS LINK === */
+    // === IMAGE AS LINK ===
     const link = document.createElement('a');
     link.href = post.url || '#';
     link.className = 'post-thumb-wrap';
@@ -478,9 +509,9 @@ function renderPosts() {
 
     link.appendChild(img);
 
-    /* PLAY ICON */
+    // PLAY ICON
     link.innerHTML += `
-      <svg viewBox="0 0 64 64">
+      <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
         <circle cx="32" cy="32" r="30"
           fill="rgba(0,0,0,0.35)"
           stroke="var(--dynamic-color)"
@@ -558,6 +589,7 @@ function addEllipsis() {
   pagination.appendChild(span);
 }
 </script>
+
 
 
 <!-- awal include mengambil dari folder /includes/ berdasarkan nama subdomain/domain -->
@@ -865,4 +897,3 @@ function addEllipsis() {
 
 </body>
 </html>
-
