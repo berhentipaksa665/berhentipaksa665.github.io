@@ -369,8 +369,8 @@ l.parentNode.insertBefore(s, l);
 </section>
 
 <script>
-/* SAFE LIQUID INCLUDE */
-const adsHTML = `{% include /ads/feed.html %}`;
+
+const adsHTML = `{% raw %}{% include /ads/feed.html %}{% endraw %}`;
 
 function getCategoryCandidates(hostname) {
   const parts = hostname.split('.');
@@ -865,3 +865,4 @@ function addEllipsis() {
 
 </body>
 </html>
+
