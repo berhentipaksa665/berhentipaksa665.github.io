@@ -260,37 +260,38 @@ l.parentNode.insertBefore(s, l);
 
 <main>
 
-<style>  
-.recent-posts {  
-  margin: 3rem auto;  
-  padding: 0 1rem;  
-  max-width: 1200px;  
-}  
+<style>
+.recent-posts {
+  margin: 1.5rem auto;
+  padding: 0 .5rem;
+  max-width: 1200px;
+}
 
-.recent-posts .grid {  
-  display: grid;  
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));  
-  gap: 1.5rem;  
-}  
+.recent-posts .grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: .9rem;
+}
 
-.post-card {  
-  background: #fff;  
-  border-radius: 12px;  
-  overflow: hidden;  
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);  
-  transition: transform 0.2s ease, box-shadow 0.2s ease;  
-  padding: 1.5rem 1.2rem;  
-  display: flex;  
-  flex-direction: column;  
-  justify-content: space-between;  
-}  
+/* CARD COMPACT */
+.post-card {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  transition: transform .15s ease, box-shadow .15s ease;
+  padding: .8rem .6rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
 
-.post-card:hover {  
-  transform: translateY(-5px);  
-  box-shadow: 0 6px 14px rgba(0,0,0,0.1);  
-}  
+.post-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+}
 
-/* GAMBAR */
+/* THUMBNAIL WRAPPER */
 .post-thumb-wrap {
   position: relative;
   width: 100%;
@@ -300,7 +301,7 @@ l.parentNode.insertBefore(s, l);
 .post-thumb-wrap img {
   width: 100%;
   height: auto;
-  border-radius: 10px;
+  border-radius: 8px;
   object-fit: cover;
   display: block;
 }
@@ -308,217 +309,260 @@ l.parentNode.insertBefore(s, l);
 /* PLAY ICON */
 .post-thumb-wrap svg {
   position: absolute;
-  width: 60px;
-  height: 60px;
+  width: 48px;
+  height: 48px;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  opacity: 0.55;
-  transition: opacity 0.25s ease;
+  opacity: .65;
+  transition: opacity .2s ease;
 }
 
 .post-thumb-wrap:hover svg {
-  opacity: 0.9;
+  opacity: .95;
 }
 
 .post-card h3 {
-  font-size: 1.2rem;
-  margin-top: 0.9rem;
+  font-size: 1rem;
+  margin-top: .5rem;
+  line-height: 1.3;
 }
 
 .post-card h3 a {
   text-decoration: none;
   color: #222;
-  transition: color 0.2s ease;
+  transition: color .2s ease;
 }
 
 .post-card h3 a:hover {
-  color: var(--dynamic-color, #0078ff);
+  color: var(--dynamic-color, #008080);
 }
 
-/* Pagination */  
-.pagination {  
-  display: flex;  
-  flex-wrap: wrap;  
-  justify-content: center;  
-  align-items: center;  
-  gap: 0.4rem;  
-  margin-top: 2rem;  
-  padding: 0.5rem;  
-  width: 100%;  
-  box-sizing: border-box;  
-}  
-.pagination button {  
-  background: var(--dynamic-color, #0078ff);  
-  color: #fff;  
-  border: none;  
-  padding: 0.4rem 0.8rem;  
-  border-radius: 6px;  
-  cursor: pointer;  
-  font-size: 0.85rem;  
-  transition: all 0.2s ease;  
-  min-width: 36px;  
-}  
-.pagination button:hover:not(:disabled) {  
-  background: #005ec7;  
-  transform: translateY(-1px);  
-}  
-.pagination button:disabled {  
-  background: #ccc;  
-  color: #555;  
-}  
-</style>  
+/* PAGINATION */
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: .3rem;
+  margin-top: 1rem;
+  padding: .3rem;
+}
 
+.pagination button {
+  background: var(--dynamic-color, #008080);
+  color: #fff;
+  border: none;
+  padding: .3rem .6rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: .8rem;
+  transition: .15s ease;
+}
 
-<section class="recent-posts">        
-<div id="postsContainer"></div>
-<div id="pagination"></div>
+.pagination button:hover:not(:disabled) {
+  background: #006666;
+}
+
+.pagination button:disabled {
+  background: #ccc;
+  color: #555;
+}
+</style>
+
+<section class="recent-posts">
+  <div id="recent-posts-container" class="grid"></div>
+  <div id="pagination" class="pagination"></div>
 </section>
+
 <script>
-// =========================
-// DATA AWAL (posts.json)
-// =========================
-const postsData = window.postsData || []; // pastikan sudah load posts.json
+function getCategoryCandidates(hostname) {
+  const parts = hostname.split('.');
+  if (parts.length < 2) return { sub: null, domain: null };
 
-// =========================
-// PARAMETER PAGINASI
-// =========================
-const postsPerPage = 10;
-let currentPage = 1;
+  const maybeDomainIndex = parts.length - 3;
+  const domain = (maybeDomainIndex >= 0) ? parts[maybeDomainIndex] : parts[0];
+  const subLabels = (maybeDomainIndex > 0) ? parts.slice(0, maybeDomainIndex) : [];
+  const rawSub = subLabels.length ? subLabels.join('.') : null;
 
-// =========================
-// RENDER POST LIST
-// =========================
+  const normalize = s => String(s || '')
+    .replace(/[-.]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+
+  return {
+    sub: rawSub ? normalize(rawSub) : null,
+    domain: domain ? normalize(domain) : null
+  };
+}
+
+const urlParams = new URLSearchParams(window.location.search);
+const initialPage = parseInt(urlParams.get('page')) || 1;
+const { sub: subCategory, domain: domainCategory } = getCategoryCandidates(window.location.hostname);
+const POSTS_PER_PAGE = 6;
+let currentPage = initialPage;
+let filteredPosts = [];
+
+fetch('/posts.json')
+  .then(res => {
+    if (!res.ok) throw new Error('Failed to load posts.json');
+    return res.json();
+  })
+  .then(posts => {
+    const normalize = s => String(s || '')
+      .replace(/[-.]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+
+    if (!Array.isArray(posts) || posts.length === 0) return clearAll();
+
+    // Filter by subdomain category
+    if (subCategory) {
+      filteredPosts = posts.filter(p =>
+        Array.isArray(p.categories) &&
+        p.categories.some(c => normalize(c) === subCategory)
+      );
+    }
+
+    // If empty → try domain category
+    if (filteredPosts.length === 0 && domainCategory) {
+      filteredPosts = posts.filter(p =>
+        Array.isArray(p.categories) &&
+        p.categories.some(c => normalize(c) === domainCategory)
+      );
+    }
+
+    // Jika tetap kosong → tampilkan kosong total
+    if (filteredPosts.length === 0) return clearAll();
+
+    filteredPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
+    renderPosts();
+  })
+  .catch(err => {
+    console.error('Error loading posts:', err);
+    clearAll();
+  });
+
+function clearAll() {
+  document.getElementById('recent-posts-container').innerHTML = '';
+  document.getElementById('pagination').innerHTML = '';
+}
+
 function renderPosts() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const categoryFilter = urlParams.get("category");
+  const container = document.getElementById('recent-posts-container');
+  const pagination = document.getElementById('pagination');
+  container.innerHTML = '';
+  pagination.innerHTML = '';
 
-  // Filter kategori → jika tidak ada kategori cocok → NO OUTPUT
-  let filteredPosts = postsData;
-  if (categoryFilter) {
-    filteredPosts = postsData.filter(p => 
-      Array.isArray(p.categories) && p.categories.includes(categoryFilter)
-    );
-  }
+  const start = (currentPage - 1) * POSTS_PER_PAGE;
+  const end = start + POSTS_PER_PAGE;
+  const pagePosts = filteredPosts.slice(start, end);
 
-  // Jika tidak ada postingan sesuai kategori → kosong total
-  if (filteredPosts.length === 0) {
-    document.getElementById("postsContainer").innerHTML = "";
-    document.getElementById("pagination").innerHTML = "";
-    return;
-  }
+  pagePosts.forEach(post => {
+    const card = document.createElement('div');
+    card.className = 'post-card';
 
-  // Hitung batas halaman
-  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
-  const start = (currentPage - 1) * postsPerPage;
-  const pagePosts = filteredPosts.slice(start, start + postsPerPage);
-
-  const container = document.getElementById("postsContainer");
-  container.innerHTML = "";
-
-  pagePosts.forEach(post => {        
-    const card = document.createElement('div');        
-    card.className = 'post-card';        
-    card.style.margin = "0 0 10px 0";
-    card.style.padding = "0";
-
-    // =========================
-    // IMAGE WRAPPER + SVG PLAY
-    // =========================
     const wrap = document.createElement('div');
-    wrap.style.position = "relative";
-    wrap.style.width = "100%";
+    wrap.className = 'post-thumb-wrap';
 
     const img = document.createElement('img');
     img.src = post.image || '/assets/img/default.jpg';
     img.alt = post.title || 'thumbnail';
     img.loading = "lazy";
-    img.style.width = "100%";
-    img.style.height = "auto";
-    img.style.display = "block";
-    img.style.borderRadius = "0";
 
     wrap.appendChild(img);
 
-    // SVG PLAY ICON (pakai var(--dynamic-color))
-    const play = document.createElement('div');
-    play.innerHTML = `
-      <svg width="60" height="60" viewBox="0 0 100 100" 
-           style="fill: var(--dynamic-color); opacity:0.8;">
-        <circle cx="50" cy="50" r="45" fill="rgba(0,0,0,0.35)"/>
-        <polygon points="40,30 70,50 40,70"/>
-      </svg>`;
-    play.style.position = "absolute";
-    play.style.top = "50%";
-    play.style.left = "50%";
-    play.style.transform = "translate(-50%, -50%)";
-    play.style.pointerEvents = "none";
+    /* PLAY ICON MENGIKUTI --dynamic-color */
+    wrap.innerHTML += `
+      <svg viewBox="0 0 64 64">
+        <circle cx="32" cy="32" r="30" 
+          fill="rgba(0,0,0,0.35)" 
+          stroke="var(--dynamic-color)" 
+          stroke-width="3" />
+        <polygon points="26,20 48,32 26,44" 
+          fill="var(--dynamic-color)" />
+      </svg>
+    `;
 
-    wrap.appendChild(play);
     card.appendChild(wrap);
 
-    // =========================
-    // JUDUL class="spo"
-    // =========================
-    const h3 = document.createElement('h3');        
-    h3.style.margin = "5px 0";
-    h3.style.padding = "0";
+    const h3 = document.createElement('h3');
+    h3.className = 'spo';
 
-    const linkTitle = document.createElement('a');        
-    linkTitle.href = post.url || '#';        
+    const linkTitle = document.createElement('a');
+    linkTitle.href = post.url || '#';
     linkTitle.textContent = post.title || '(no title)';
-    linkTitle.className = "spo";   
 
-    h3.appendChild(linkTitle);        
+    h3.appendChild(linkTitle);
     card.appendChild(h3);
 
-    container.appendChild(card);        
+    container.appendChild(card);
   });
 
-  renderPagination(totalPages);
-}
-
-// =========================
-// PAGINATION
-// =========================
-function renderPagination(totalPages) {
-  const pagination = document.getElementById("pagination");
-  pagination.innerHTML = "";
+  const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
   if (totalPages <= 1) return;
 
-  pagination.style.display = "flex";
-  pagination.style.gap = "5px";
-  pagination.style.marginTop = "10px";
+  const prevBtn = document.createElement('button');
+  prevBtn.textContent = 'Prev';
+  prevBtn.disabled = currentPage === 1;
+  prevBtn.onclick = () => changePage(currentPage - 1);
+  pagination.appendChild(prevBtn);
 
-  for (let i = 1; i <= totalPages; i++) {
-    const btn = document.createElement("a");
-    btn.textContent = i.toString();
-    btn.href = `?page=${i}`;
-    btn.style.padding = "3px 6px";
-    btn.style.border = "1px solid var(--dynamic-color)";
-    btn.style.color = "var(--dynamic-color)";
-    btn.style.fontSize = "13px";
-    btn.style.textDecoration = "none";
-    btn.style.borderRadius = "3px";
+  const maxVisible = 5;
+  let startPage = Math.max(1, currentPage - 2);
+  let endPage = Math.min(totalPages, currentPage + 2);
 
-    if (i === currentPage) {
-      btn.style.background = "var(--dynamic-color)";
-      btn.style.color = "#fff";
-    }
+  if (currentPage <= 3) endPage = Math.min(totalPages, maxVisible);
+  else if (currentPage >= totalPages - 2) startPage = Math.max(1, totalPages - maxVisible + 1);
 
-    pagination.appendChild(btn);
+  if (startPage > 1) {
+    addPageButton(1);
+    if (startPage > 2) addEllipsis();
   }
+
+  for (let i = startPage; i <= endPage; i++) addPageButton(i);
+
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) addEllipsis();
+    addPageButton(totalPages);
+  }
+
+  const nextBtn = document.createElement('button');
+  nextBtn.textContent = 'Next';
+  nextBtn.disabled = currentPage === totalPages;
+  nextBtn.onclick = () => changePage(currentPage + 1);
+  pagination.appendChild(nextBtn);
 }
 
-// =========================
-// PAGE DETECTION
-// =========================
-(function init() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const p = parseInt(urlParams.get("page"));
-  if (!isNaN(p) && p > 0) currentPage = p;
+function changePage(page) {
+  currentPage = page;
   renderPosts();
-})();
+  const newUrl = `${window.location.pathname}?page=${String(page).padStart(2, '0')}`;
+  history.pushState({}, '', newUrl);
+}
+
+function addPageButton(page) {
+  const pagination = document.getElementById('pagination');
+  const pageBtn = document.createElement('button');
+  pageBtn.textContent = page;
+
+  if (page === currentPage) {
+    pageBtn.disabled = true;
+    pageBtn.style.fontWeight = 'bold';
+  }
+
+  pageBtn.onclick = () => changePage(page);
+  pagination.appendChild(pageBtn);
+}
+
+function addEllipsis() {
+  const pagination = document.getElementById('pagination');
+  const span = document.createElement('span');
+  span.textContent = '…';
+  pagination.appendChild(span);
+}
 </script>
 
 <!-- awal include mengambil dari folder /includes/ berdasarkan nama subdomain/domain -->
@@ -670,6 +714,7 @@ function renderPagination(totalPages) {
 }
 </style>
 
+<center>
 <section class="home-search-wrapper">
   <h2>Search your files</h2>
   <p>Instantly find anything you’ve saved, shared, or created.</p>
@@ -688,6 +733,7 @@ function renderPagination(totalPages) {
     </button>
   </form>
 </section>
+</center>
 
 <!-- akhir search -->
     <br /><br />
@@ -838,4 +884,4 @@ function renderPagination(totalPages) {
 	
 
 </body>
-</html> 
+</html>
