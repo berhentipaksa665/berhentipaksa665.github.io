@@ -371,170 +371,154 @@ l.parentNode.insertBefore(s, l);
 
 
 <section class="recent-posts">        
-  <div id="recent-posts-container" class="grid"></div>        
-  <div id="pagination" class="pagination"></div>        
-</section>        
+<div id="postsContainer"></div>
+<div id="pagination"></div>
+</section>
+<script>
+// =========================
+// DATA AWAL (posts.json)
+// =========================
+const postsData = window.postsData || []; // pastikan sudah load posts.json
 
+// =========================
+// PARAMETER PAGINASI
+// =========================
+const postsPerPage = 10;
+let currentPage = 1;
 
-<script>  
-function getCategoryCandidates(hostname) {        
-  const parts = hostname.split('.');        
-  if (parts.length < 2) return { sub: null, domain: null };        
-  const maybeDomainIndex = parts.length - 3;        
-  const domain = (maybeDomainIndex >= 0) ? parts[maybeDomainIndex] : parts[0];        
-  const subLabels = (maybeDomainIndex > 0) ? parts.slice(0, maybeDomainIndex) : [];        
-  const rawSub = subLabels.length ? subLabels.join('.') : null;        
-  const normalize = s => String(s || '').replace(/[-.]+/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();        
-  return { sub: rawSub ? normalize(rawSub) : null, domain: domain ? normalize(domain) : null };        
-}        
+// =========================
+// RENDER POST LIST
+// =========================
+function renderPosts() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const categoryFilter = urlParams.get("category");
 
-const urlParams = new URLSearchParams(window.location.search);  
-const initialPage = parseInt(urlParams.get('page')) || 1;  
-const { sub: subCategory, domain: domainCategory } = getCategoryCandidates(window.location.hostname);        
-const POSTS_PER_PAGE = 6;        
-let currentPage = initialPage;        
-let filteredPosts = [];        
+  // Filter kategori → jika tidak ada kategori cocok → NO OUTPUT
+  let filteredPosts = postsData;
+  if (categoryFilter) {
+    filteredPosts = postsData.filter(p => 
+      Array.isArray(p.categories) && p.categories.includes(categoryFilter)
+    );
+  }
 
-fetch('/posts.json')        
-  .then(res => {        
-    if (!res.ok) throw new Error('Failed to load posts.json');        
-    return res.json();        
-  })        
-  .then(posts => {        
-    const normalize = s => String(s || '').replace(/[-.]+/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();        
-    if (!Array.isArray(posts) || posts.length === 0) return renderNoPosts();        
+  // Jika tidak ada postingan sesuai kategori → kosong total
+  if (filteredPosts.length === 0) {
+    document.getElementById("postsContainer").innerHTML = "";
+    document.getElementById("pagination").innerHTML = "";
+    return;
+  }
 
-    if (subCategory) {        
-      filteredPosts = posts.filter(p => Array.isArray(p.categories) && p.categories.some(c => normalize(c) === subCategory));        
-    }        
+  // Hitung batas halaman
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  const start = (currentPage - 1) * postsPerPage;
+  const pagePosts = filteredPosts.slice(start, start + postsPerPage);
 
-    if (filteredPosts.length === 0 && domainCategory) {        
-      filteredPosts = posts.filter(p => Array.isArray(p.categories) && p.categories.some(c => normalize(c) === domainCategory));        
-    }        
-
-    if (filteredPosts.length === 0) filteredPosts = posts;        
-
-    filteredPosts.sort((a, b) => new Date(b.date) - new Date(a.date));        
-    renderPosts();        
-  })        
-  .catch(err => {        
-    console.error('Error loading posts:', err);        
-    renderNoPosts();        
-  });        
-
-
-function renderPosts() {        
-  const container = document.getElementById('recent-posts-container');        
-  const pagination = document.getElementById('pagination');        
-  container.innerHTML = '';        
-  pagination.innerHTML = '';        
-
-  const start = (currentPage - 1) * POSTS_PER_PAGE;        
-  const end = start + POSTS_PER_PAGE;        
-  const pagePosts = filteredPosts.slice(start, end);        
+  const container = document.getElementById("postsContainer");
+  container.innerHTML = "";
 
   pagePosts.forEach(post => {        
     const card = document.createElement('div');        
     card.className = 'post-card';        
+    card.style.margin = "0 0 10px 0";
+    card.style.padding = "0";
 
-
-    /* === WRAPPER GAMBAR + PLAY ICON === */
+    // =========================
+    // IMAGE WRAPPER + SVG PLAY
+    // =========================
     const wrap = document.createElement('div');
-    wrap.className = 'post-thumb-wrap';
+    wrap.style.position = "relative";
+    wrap.style.width = "100%";
 
     const img = document.createElement('img');
     img.src = post.image || '/assets/img/default.jpg';
     img.alt = post.title || 'thumbnail';
-    img.loading = "lazy";  // LAZY LOAD
+    img.loading = "lazy";
+    img.style.width = "100%";
+    img.style.height = "auto";
+    img.style.display = "block";
+    img.style.borderRadius = "0";
 
     wrap.appendChild(img);
 
-    // PLAY ICON SVG
-    wrap.innerHTML += `
-      <svg viewBox="0 0 64 64">
-        <circle cx="32" cy="32" r="30" fill="rgba(0,0,0,0.25)" />
-        <polygon points="26,20 48,32 26,44" fill="white" />
-      </svg>
-    `;
+    // SVG PLAY ICON (pakai var(--dynamic-color))
+    const play = document.createElement('div');
+    play.innerHTML = `
+      <svg width="60" height="60" viewBox="0 0 100 100" 
+           style="fill: var(--dynamic-color); opacity:0.8;">
+        <circle cx="50" cy="50" r="45" fill="rgba(0,0,0,0.35)"/>
+        <polygon points="40,30 70,50 40,70"/>
+      </svg>`;
+    play.style.position = "absolute";
+    play.style.top = "50%";
+    play.style.left = "50%";
+    play.style.transform = "translate(-50%, -50%)";
+    play.style.pointerEvents = "none";
 
+    wrap.appendChild(play);
     card.appendChild(wrap);
-    /* ===================================== */
 
+    // =========================
+    // JUDUL class="spo"
+    // =========================
+    const h3 = document.createElement('h3');        
+    h3.style.margin = "5px 0";
+    h3.style.padding = "0";
 
-    /* === JUDUL (DENGAN class="spo") === */
-    const h3 = document.createElement('h3');
-    h3.className = 'spo';
-
-    const linkTitle = document.createElement('a');
-    linkTitle.href = post.url || '#';
+    const linkTitle = document.createElement('a');        
+    linkTitle.href = post.url || '#';        
     linkTitle.textContent = post.title || '(no title)';
-    h3.appendChild(linkTitle);
-    card.appendChild(h3);
-    /* =================================== */
+    linkTitle.className = "spo";   
 
+    h3.appendChild(linkTitle);        
+    card.appendChild(h3);
 
     container.appendChild(card);        
-  });        
+  });
 
-  const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);        
-  if (totalPages > 1) {        
-    const prevBtn = document.createElement('button');        
-    prevBtn.textContent = 'Prev';        
-    prevBtn.disabled = currentPage === 1;        
-    prevBtn.onclick = () => changePage(currentPage - 1);        
-    pagination.appendChild(prevBtn);        
+  renderPagination(totalPages);
+}
 
-    const maxVisible = 5;        
-    let startPage = Math.max(1, currentPage - 2);        
-    let endPage = Math.min(totalPages, currentPage + 2);        
+// =========================
+// PAGINATION
+// =========================
+function renderPagination(totalPages) {
+  const pagination = document.getElementById("pagination");
+  pagination.innerHTML = "";
+  if (totalPages <= 1) return;
 
-    if (currentPage <= 3) endPage = Math.min(totalPages, maxVisible);        
-    else if (currentPage >= totalPages - 2) startPage = Math.max(1, totalPages - maxVisible + 1);        
+  pagination.style.display = "flex";
+  pagination.style.gap = "5px";
+  pagination.style.marginTop = "10px";
 
-    if (startPage > 1) { addPageButton(1); if (startPage > 2) addEllipsis(); }        
-    for (let i = startPage; i <= endPage; i++) addPageButton(i);        
-    if (endPage < totalPages) { if (endPage < totalPages - 1) addEllipsis(); addPageButton(totalPages); }        
+  for (let i = 1; i <= totalPages; i++) {
+    const btn = document.createElement("a");
+    btn.textContent = i.toString();
+    btn.href = `?page=${i}`;
+    btn.style.padding = "3px 6px";
+    btn.style.border = "1px solid var(--dynamic-color)";
+    btn.style.color = "var(--dynamic-color)";
+    btn.style.fontSize = "13px";
+    btn.style.textDecoration = "none";
+    btn.style.borderRadius = "3px";
 
-    const nextBtn = document.createElement('button');        
-    nextBtn.textContent = 'Next';        
-    nextBtn.disabled = currentPage === totalPages;        
-    nextBtn.onclick = () => changePage(currentPage + 1);        
-    pagination.appendChild(nextBtn);        
-  }        
-}        
+    if (i === currentPage) {
+      btn.style.background = "var(--dynamic-color)";
+      btn.style.color = "#fff";
+    }
 
-function changePage(page) {  
-  currentPage = page;  
-  renderPosts();  
-  const newUrl = `${window.location.pathname}?page=${String(page).padStart(2, '0')}`;  
-  history.pushState({}, '', newUrl);  
-}        
+    pagination.appendChild(btn);
+  }
+}
 
-function addPageButton(page) {        
-  const pagination = document.getElementById('pagination');        
-  const pageBtn = document.createElement('button');        
-  pageBtn.textContent = page;        
-  if (page === currentPage) {        
-    pageBtn.disabled = true;        
-    pageBtn.style.fontWeight = 'bold';        
-  }        
-  pageBtn.onclick = () => changePage(page);        
-  pagination.appendChild(pageBtn);        
-}        
-
-function addEllipsis() {        
-  const pagination = document.getElementById('pagination');        
-  const span = document.createElement('span');        
-  span.textContent = '…';        
-  pagination.appendChild(span);        
-}        
-
-function renderNoPosts() {        
-  const container = document.getElementById('recent-posts-container');        
-  const pagination = document.getElementById('pagination');        
-  container.innerHTML = '<p>No posts found.</p>';        
-  pagination.innerHTML = '';        
-}        
+// =========================
+// PAGE DETECTION
+// =========================
+(function init() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const p = parseInt(urlParams.get("page"));
+  if (!isNaN(p) && p > 0) currentPage = p;
+  renderPosts();
+})();
 </script>
 
 <!-- awal include mengambil dari folder /includes/ berdasarkan nama subdomain/domain -->
@@ -731,3 +715,4 @@ function renderNoPosts() {
 
 </body>
 </html>
+
