@@ -260,7 +260,6 @@ l.parentNode.insertBefore(s, l);
 
 <main>
 
-
 <style>
 .recent-posts {
   margin: 1.5rem auto;
@@ -393,7 +392,7 @@ function getCategoryCandidates(hostname) {
 const urlParams = new URLSearchParams(window.location.search);
 const initialPage = parseInt(urlParams.get('page')) || 1;
 const { sub: subCategory, domain: domainCategory } = getCategoryCandidates(window.location.hostname);
-const POSTS_PER_PAGE = 12;
+const POSTS_PER_PAGE = 6;
 let currentPage = initialPage;
 let filteredPosts = [];
 
@@ -454,8 +453,12 @@ function renderPosts() {
     const card = document.createElement('div');
     card.className = 'post-card';
 
-    /* === TITLE (TEXT ONLY) === */
+    /* === ADS INSERTED BEFORE TITLE === */
+    card.innerHTML += `{% include /ads/feed.html %}`;
+
+    /* === TITLE (TEXT ONLY) WITH CLASS="spo" === */
     const h3 = document.createElement('h3');
+    h3.className = "spo";
     h3.textContent = post.title || '(no title)';
     card.appendChild(h3);
 
@@ -551,6 +554,7 @@ function addEllipsis() {
   pagination.appendChild(span);
 }
 </script>
+
 
 <!-- awal include mengambil dari folder /includes/ berdasarkan nama subdomain/domain -->
   <div class="spo" id="dynamic-include"></div>
