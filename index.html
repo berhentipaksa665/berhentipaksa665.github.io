@@ -566,6 +566,130 @@ function renderPagination(totalPages) {
 
 
 </main>
+
+<!-- awal search -->
+
+<style>
+/* 🌟 Wrapper utama */
+.home-search-wrapper {
+  text-align: center;
+  width: 80%;
+  max-width: 600px;
+  padding: 2rem;
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* ✨ Judul */
+.home-search-wrapper h2 {
+  font-size: 2rem;
+  margin-bottom: 0.6rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--dynamic-color);
+}
+
+/* 💬 Subteks */
+.home-search-wrapper p {
+  color: var(--dynamic-color);
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+}
+
+/* 🔍 Form pencarian */
+#customSearchForm {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 2rem;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+#customSearchForm:focus-within {
+  box-shadow: 0 5px 16px rgba(0,0,0,0.15);
+}
+
+/* Input */
+#searchInput {
+  flex: 1;
+  border: none;
+  padding: 0.9rem 1.3rem;
+  font-size: 1rem;
+  outline: none;
+  background: transparent;
+  color: var(--dynamic-color);
+}
+
+#searchInput::placeholder {
+  color: var(--dynamic-color);
+  font-style: italic;
+}
+
+/* Tombol */
+.search-btn {
+  background: var(--dynamic-color);
+  border: none;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  transition: background 0.25s ease;
+}
+
+.search-btn:hover {
+  background: #1d4ed8;
+}
+
+.search-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Animasi lembut */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsif */
+@media (max-width: 480px) {
+  .home-search-wrapper h2 {
+    font-size: 1.6rem;
+  }
+  #searchInput {
+    padding: 0.7rem 1rem;
+  }
+  .search-btn {
+    width: 46px;
+    height: 46px;
+  }
+}
+</style>
+
+<section class="home-search-wrapper">
+  <h2>Search your files</h2>
+  <p>Instantly find anything you’ve saved, shared, or created.</p>
+
+  <form id="customSearchForm" method="get" action="/search/"> 
+    <input 
+      id="searchInput"
+      type="text"
+      name="q"
+      placeholder="Type to start searching..."
+      autocomplete="on"/>
+    <button type="submit" class="search-btn" aria-label="Search">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M21 20l-5.8-5.8a7 7 0 10-1.4 1.4L20 21l1-1zM4 10a6 6 0 1112 0 6 6 0 01-12 0z"/>
+      </svg>
+    </button>
+  </form>
+</section>
+
+<!-- akhir search -->
     <br /><br />
 
 <center><pre>ads by Adsterra to keep my blog alive</pre><hr />
@@ -714,5 +838,4 @@ function renderPagination(totalPages) {
 	
 
 </body>
-</html>
-
+</html> 
